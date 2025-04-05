@@ -1,14 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
-
-// https://vite.dev/config/
+import path from 'path'
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '#ASSETS': fileURLToPath(new URL('./src/assets', import.meta.url)),
+      // eslint-disable-next-line no-undef
+      '@': path.resolve(__dirname, './src'), // 配置 @ 指向 src 目录
     },
   },
 })
