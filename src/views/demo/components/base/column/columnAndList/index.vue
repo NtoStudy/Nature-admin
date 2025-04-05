@@ -94,13 +94,7 @@
         @size-change="handleSizeChange"
       >
         <template #otherOperate="{ row }">
-          <el-button
-            type="primary"
-            text
-            size="small"
-            @click="handleShowDetail(row)"
-            >详情
-          </el-button>
+          <el-button type="primary" text size="small" @click="handleShowDetail(row)">详情 </el-button>
         </template>
       </NTCustomTable>
       <!-- E 表格列表 -->
@@ -112,8 +106,14 @@ import { ref, reactive, onMounted, resolveComponent, h } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
 import useListPage from '@/hooks/business/useListPage'
+import NTColumn from '@/components/NTColumn/index.vue'
+import NTList from '@/components/NTList/index.vue'
+import NTSearchFormFilter from '@/components/NTSearchFormFilter/index.vue'
+import NTSearchFormFilterItem from '@/components/NTSearchFormFilter/NTSearchFormFilterItem/index.vue'
+import NTCustomTable from '@/components/NTCustomTable/index.vue'
 
 export default {
+  components: { NTCustomTable, NTSearchFormFilterItem, NTSearchFormFilter, NTList, NTColumn },
   setup() {
     const { $api, $apiCode, $message, $dict } = useCurrentInstance()
     const { list: dataList, loadding } = useListPage()
@@ -145,18 +145,16 @@ export default {
         name,
       }
 
-      const apiRes = await $api.poem
-        .getPoemCategoryList(params)
-        .catch((error) => {
-          $message.error({
-            message: error,
-            duration: 3000,
-          })
-          setTimeout(() => {
-            // 解决loadding闪烁
-            categoryLoading.value = false
-          }, 150)
+      const apiRes = await $api.poem.getPoemCategoryList(params).catch((error) => {
+        $message.error({
+          message: error,
+          duration: 3000,
         })
+        setTimeout(() => {
+          // 解决loadding闪烁
+          categoryLoading.value = false
+        }, 150)
+      })
 
       const { code, data, msg } = apiRes.data
       if (code === $apiCode.SUCCESS && data) {
@@ -269,10 +267,7 @@ export default {
         dataFormatConf: {
           withScopeRow: true,
           formatFunction: ({ value }) => {
-            return `${$dict.$formatDictKeyToValue(
-              $dict.poem.PUBLISH_STATUS,
-              value
-            )}`
+            return `${$dict.$formatDictKeyToValue($dict.poem.PUBLISH_STATUS, value)}`
           },
         },
       },
@@ -382,7 +377,7 @@ export default {
         {
           type: 'warning',
           dangerouslyUseHTMLString: true,
-        }
+        },
       )
         .then(() => {})
         .catch(() => {})

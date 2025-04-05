@@ -91,20 +91,8 @@
             @click="handleShowDetail(row)"
             >详情
           </el-button>
-          <el-button
-            v-permission-auth="ConfigurableTableEdit"
-            type="primary"
-            text
-            size="small"
-            >编辑</el-button
-          >
-          <el-button
-            v-permission-auth="ConfigurableTableDelete"
-            type="primary"
-            text
-            size="small"
-            >删除</el-button
-          >
+          <el-button v-permission-auth="ConfigurableTableEdit" type="primary" text size="small">编辑</el-button>
+          <el-button v-permission-auth="ConfigurableTableDelete" type="primary" text size="small">删除</el-button>
         </template>
       </NTTable>
       <!-- E 表格列表 -->
@@ -122,9 +110,12 @@ import {
   ConfigurableTableCreate,
   ConfigurableTableDelete,
 } from '@/settings/config/permission'
+import NTSearchFormFilter from '@/components/NTSearchFormFilter/index.vue'
+import NTSearchFormFilterItem from '@/components/NTSearchFormFilter/NTSearchFormFilterItem/index.vue'
 
 export default {
   name: 'ConfigurableTable',
+  components: { NTSearchFormFilterItem, NTSearchFormFilter },
   setup() {
     const { $api, $apiCode, $message, $dict } = useCurrentInstance()
     const { list: dataList, loadding } = useListPage()
@@ -191,10 +182,7 @@ export default {
         dataFormatConf: {
           withScopeRow: true,
           formatFunction: ({ value }) => {
-            return `${$dict.$formatDictKeyToValue(
-              $dict.poem.PUBLISH_STATUS,
-              value
-            )}`
+            return `${$dict.$formatDictKeyToValue($dict.poem.PUBLISH_STATUS, value)}`
           },
         },
       },
@@ -288,15 +276,9 @@ export default {
 
     // 详情
     const handleShowDetail = (row) => {
-      ElMessageBox.confirm(
-        `根据自身业务需要，使用row数据进行相关逻辑处理。\n${JSON.stringify(
-          row
-        )}`,
-        '提示',
-        {
-          type: 'warning',
-        }
-      )
+      ElMessageBox.confirm(`根据自身业务需要，使用row数据进行相关逻辑处理。\n${JSON.stringify(row)}`, '提示', {
+        type: 'warning',
+      })
         .then(() => {})
         .catch(() => {})
       console.log(row)

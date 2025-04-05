@@ -6,8 +6,8 @@ import api from '@/api'
 import { API_CODE } from '@/settings/config/http'
 
 // 本地开发模式下启用mock，开发可以根据实际情况手动调整
-mock(import.meta.env.VITE_APP_COMMAND === 'dev')
-
+// mock(import.meta.env.VITE_APP_COMMAND === 'dev')
+mock(true)
 const apiPlugin = {
   install(app) {
     app.config.globalProperties.$api = api
