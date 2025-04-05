@@ -12,8 +12,8 @@ import 'element-plus/dist/index.css'
 import locale from 'element-plus/es/locale/lang/zh-cn'
 import 'remixicon/fonts/remixicon.css'
 import App from '@/App.vue'
-// import addPermissionRoutesMiddleWare from '@/middleware/addPermissionRoutesMiddleWare'
-// import mountCacheDataMiddleWare from '@/middleware/mountCacheDataMiddleWare'
+import addPermissionRoutesMiddleWare from '@/middleware/addPermissionRoutesMiddleWare'
+import mountCacheDataMiddleWare from '@/middleware/mountCacheDataMiddleWare'
 
 async function bootstrap() {
   const app = createApp(App)
@@ -31,9 +31,9 @@ async function bootstrap() {
   // 插件plugins注册
   registPlugins(app)
 
-  // // 初始化路由与相关必须的用户数据
-  // await mountCacheDataMiddleWare(app)
-  // await addPermissionRoutesMiddleWare()
+  // 初始化路由与相关必须的用户数据
+  await mountCacheDataMiddleWare(app)
+  await addPermissionRoutesMiddleWare()
 
   // 注册路由与路由守卫
   registRouter(app)
