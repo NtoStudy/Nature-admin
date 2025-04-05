@@ -74,10 +74,8 @@ import { ElMessageBox } from 'element-plus'
 import useAppStore from '@/store/modules/app'
 import useLayoutStore from '@/store/modules/layout'
 import { NEED_CONFIRM_PAGE_ROUTE_PATH_LIST } from '@/settings/config/router'
-import { CloseBold } from '@element-plus/icons-vue'
 
 export default defineComponent({
-  components: { CloseBold },
   emits: ['refresh'],
   setup(props, { emit }) {
     const instance = getCurrentInstance()
@@ -360,7 +358,6 @@ export default defineComponent({
           margin-right: -18px;
           line-height: 38px;
           text-align: center;
-          padding-left: 0 !important;
           border: 0;
           outline: none;
           transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;

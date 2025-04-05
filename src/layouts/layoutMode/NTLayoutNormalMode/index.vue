@@ -1,22 +1,19 @@
-<!--布局模式-分栏模式-->
+<!--
+ * 布局模式-分栏模式
+-->
 <template>
   <div class="nt-layout-column-mode">
     <div class="nt-layout-aside">
       <NTLogo></NTLogo>
       <!-- S 左侧菜单导航 -->
       <el-scrollbar class="nt-layout-menu-scroll">
-        <NTNavMenu
-            :menuList="ablePermissionRoutesFullTree?.children"
-        ></NTNavMenu>
+        <NTNavMenu :menuList="ablePermissionRoutesFullTree?.children"></NTNavMenu>
       </el-scrollbar>
       <!-- E 左侧菜单导航 -->
     </div>
 
     <!-- S main内容主体 -->
-    <div
-        class="nt-layout-main"
-        :class="{ 'nt-layout-main--has-fixed-header': isHeaderFixed }"
-    >
+    <div class="nt-layout-main" :class="{ 'nt-layout-main--has-fixed-header': isHeaderFixed }">
       <NTHeader></NTHeader>
       <NTVisitedTags @refresh="handleRefresh"></NTVisitedTags>
       <NTContent ref="ntContentRef"></NTContent>
@@ -24,8 +21,7 @@
     <!-- E main内容主体 -->
   </div>
 </template>
-
-<script setup>
+<script>
 import { ref, computed, toRefs } from 'vue'
 import useLayoutStore from '@/store/modules/layout'
 import useUserStore from '@/store/modules/user'
@@ -35,21 +31,38 @@ import NTContent from '@/layouts/NTContent/index.vue'
 import NTLogo from './components/NTLogo/index.vue'
 import NTNavMenu from './components/NTNavMenu/index.vue'
 
-const layoutStore = useLayoutStore()
-const userStore = useUserStore()
-const { ablePermissionRoutesFullTree } = toRefs(userStore)
+export default {
+  components: {
+    NTLogo,
+    NTNavMenu,
+    NTHeader,
+    NTVisitedTags,
+    NTContent,
+  },
+  setup() {
+    const layoutStore = useLayoutStore()
+    const userStore = useUserStore()
+    const { ablePermissionRoutesFullTree } = toRefs(userStore)
 
-const isHeaderFixed = computed(() => {
-  return layoutStore.isHeaderFixed
-})
+    const isHeaderFixed = computed(() => {
+      return layoutStore.isHeaderFixed
+    })
 
-// 刷新页面
-const ntContentRef = ref()
-const handleRefresh = (selectedTag) => {
-  ntContentRef.value.refresh(selectedTag)
+    // 刷新页面
+    const ntContentRef = ref()
+    const handleRefresh = (selectedTag) => {
+      ntContentRef.value.refresh(selectedTag)
+    }
+
+    return {
+      isHeaderFixed,
+      ablePermissionRoutesFullTree,
+      ntContentRef,
+      handleRefresh,
+    }
+  },
 }
 </script>
-
 <style lang="scss" scoped>
 .nt-layout-column-mode {
   // 左侧菜单导航宽度

@@ -1,29 +1,33 @@
 <template>
-  <div
-      class="nt-logo flex items-center justify-center"
-      :class="{ 'nt-logo--fold': isNavMenuFold }"
-  >
+  <div class="nt-logo flex items-center justify-center" :class="{ 'nt-logo--fold': isNavMenuFold }">
     <a class="nt-logo__wrapper flex justify-center" href="/">
       <div class="logo flex items-center">
-        <img class="logo-img" src="https://cn.vitejs.dev/logo.svg" alt=""/>
+        <img class="logo-img" src="https://cn.vitejs.dev/logo.svg" />
       </div>
       <div v-show="!isNavMenuFold" class="title">{{ APP_TITLE }}</div>
     </a>
   </div>
 </template>
-
-<script setup>
+<script>
 import { computed } from 'vue'
 import useLayoutStore from '@/store/modules/layout'
 import { APP_TITLE } from '@/settings/config/app'
 
-const layoutStore = useLayoutStore()
-// 折叠、展开切换菜单操作
-const isNavMenuFold = computed(() => {
-  return layoutStore.isNavMenuFold
-})
-</script>
+export default {
+  setup() {
+    const layoutStore = useLayoutStore()
+    // 折叠、展开切换菜单操作
+    const isNavMenuFold = computed(() => {
+      return layoutStore.isNavMenuFold
+    })
 
+    return {
+      APP_TITLE,
+      isNavMenuFold,
+    }
+  },
+}
+</script>
 <style lang="scss" scoped>
 .nt-logo {
   position: fixed;
@@ -34,7 +38,7 @@ const isNavMenuFold = computed(() => {
   background: #545c64;
   &.nt-logo--fold {
     .logo {
-      margin-left: 0;
+      margin-left: 0px;
     }
   }
   .nt-logo-wrapper {

@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { useEventBus } from '@vueuse/core'
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-// import registPlugins from '@/plugins'
+import registPlugins from '@/plugins'
 // import registRouterGuards from '@/router/guards'
 import router, { registRouter } from '@/router'
 import { registStore } from '@/store'
@@ -29,7 +29,7 @@ async function bootstrap() {
   registStore(app)
 
   // 插件plugins注册
-  // registPlugins(app)
+  registPlugins(app)
 
   // // 初始化路由与相关必须的用户数据
   // await mountCacheDataMiddleWare(app)
