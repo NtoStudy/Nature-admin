@@ -140,12 +140,19 @@
     </el-card>
   </div>
 </template>
-<script>
+
+
+<script setup>
 import { ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { debounce } from 'lodash'
 import { isNullOrUnDef, isPositive } from '@/utils/helper/is'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
+
+const { $dict } = useCurrentInstance()
+const {
+  employee: { DEPARTMENTS },
+} = $dict
 
 // 表单校验规则
 const formRules = {
@@ -168,108 +175,88 @@ const formRules = {
             callback(new Error('请输入合法金额数字'))
           }
         }
-
         callback()
       },
     },
   ],
   department: [{ required: true, message: '请选择所属部门' }],
 }
-export default {
-  setup() {
-    const { $dict } = useCurrentInstance()
-    const {
-      employee: { DEPARTMENTS },
-    } = $dict
 
-    const formRef = ref(null)
+const formRef = ref(null)
 
-    const formMdlItem = {
-      name: '',
-      amount: null,
-      department: null,
-      status: 1,
-      remark: null,
+const formMdlItem = {
+  name: '',
+  amount: null,
+  department: null,
+  status: 1,
+  remark: null,
+}
+
+// 表单数据模型
+const formMdl = ref({
+  records: [{ ...formMdlItem }],
+})
+
+// 新增一条记录
+const handleAddRecord = debounce(() => {
+  formMdl.value.records.push({ ...formMdlItem })
+}, 200)
+
+// 删除一条记录
+const handleDeleteRecord = (index) => {
+  formMdl.value.records.splice(index, 1)
+}
+
+// 重置表单
+const handleReset = () => {
+  // 清除原有可能触发的表单校验提示
+  formRef.value.resetFields()
+  formMdl.value.records = [{ ...formMdlItem }]
+}
+
+// 提交表单数据
+const submitLoading = ref(false)
+const handleSubmit = async () => {
+  if (submitLoading.value) {
+    return
+  }
+
+  // 表单校验
+  const validate = await new Promise((resolve) => {
+    formRef.value.validate(resolve)
+  })
+
+  if (!validate) {
+    return
+  }
+  submitLoading.value = true
+
+  // 参数组装
+  const params = {
+    ...formMdl.value.records,
+  }
+
+  // 接口调用
+  ElMessageBox.confirm(
+    `
+      根据自身业务需要，使用params数据进行相关逻辑处理。
+      <br />
+      ${JSON.stringify(params)}
+    `,
+    '提示',
+    {
+      type: 'warning',
+      dangerouslyUseHTMLString: true,
     }
+  )
+    .then(() => {})
+    .catch(() => {})
+  console.log('API接口调用模拟', params)
 
-    // 表单数据模型
-    const formMdl = ref({
-      records: [{ ...formMdlItem }],
-    })
-
-    // 新增一条记录
-    const handleAddRecord = debounce(() => {
-      formMdl.value.records.push({ ...formMdlItem })
-    }, 200)
-
-    // 删除一条记录
-    const handleDeleteRecord = (index) => {
-      formMdl.value.records.splice(index, 1)
-    }
-
-    // 重置表单
-    const handleReset = () => {
-      // 清除原有可能触发的表单校验提示
-      formRef.value.resetFields()
-      formMdl.value.records = [{ ...formMdlItem }]
-    }
-
-    // 提交表单数据
-    const submitLoading = ref(false)
-    const handleSubmit = async () => {
-      if (submitLoading.value) {
-        return
-      }
-
-      // 表单校验
-      const validate = await new Promise((resolve) => {
-        formRef.value.validate(resolve)
-      })
-
-      if (!validate) {
-        return
-      }
-      submitLoading.value = true
-
-      // 参数组装
-      const params = {
-        ...formMdl.value.records,
-      }
-
-      // 接口调用
-      ElMessageBox.confirm(
-        `
-          根据自身业务需要，使用params数据进行相关逻辑处理。
-          <br />
-          ${JSON.stringify(params)}
-        `,
-        '提示',
-        {
-          type: 'warning',
-          dangerouslyUseHTMLString: true,
-        }
-      )
-        .then(() => {})
-        .catch(() => {})
-      console.log('API接口调用模拟', params)
-
-      submitLoading.value = false
-    }
-
-    return {
-      DEPARTMENTS,
-      formRules,
-      formRef,
-      formMdl,
-      handleAddRecord,
-      handleDeleteRecord,
-      submitLoading,
-      handleReset,
-      handleSubmit,
-    }
-  },
+  submitLoading.value = false
 }
 </script>
+
 <style lang="scss" scoped>
 .el-card {
   border: 0;

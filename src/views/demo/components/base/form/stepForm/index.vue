@@ -55,101 +55,86 @@
     </el-card>
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref } from 'vue'
 import { debounce } from 'lodash'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
 import PaymentStep1 from './components/PaymentStep1.vue'
 import PaymentStep2 from './components/PaymentStep2.vue'
 
-export default {
-  components: {
-    PaymentStep1,
-    PaymentStep2,
-  },
-  setup() {
-    const { $api, $apiCode, $message } = useCurrentInstance()
+const { $api, $apiCode, $message } = useCurrentInstance()
 
-    // 当前处理步骤
-    const currentStepIndex = ref(1)
+// 当前处理步骤
+const currentStepIndex = ref(1)
 
-    const paymentStep1Ref = ref(null)
-    const paymentStep2Ref = ref(null)
+const paymentStep1Ref = ref(null)
+const paymentStep2Ref = ref(null)
 
-    // 下一步
-    const handleNextStep = async () => {
-      // 表单校验
-      const validate = await new Promise((resolve) => {
-        paymentStep1Ref.value.formRef.validate(resolve)
-      })
-      if (validate) {
-        currentStepIndex.value = 2
-      }
-    }
+// 下一步
+const handleNextStep = async () => {
+  // 表单校验
+  const validate = await new Promise((resolve) => {
+    paymentStep1Ref.value.formRef.validate(resolve)
+  })
+  if (validate) {
+    currentStepIndex.value = 2
+  }
+}
 
-    // 转账
-    const loadding = ref(false)
-    const handlePayment = debounce(async () => {
-      if (loadding.value) {
-        return
-      }
-      // 表单校验
-      const validate = await new Promise((resolve) => {
-        paymentStep2Ref.value.formRef.validate(resolve)
-      })
-      if (!validate) {
-        return
-      }
-      payment()
-    }, 500)
+// 转账
+const loadding = ref(false)
+const handlePayment = debounce(async () => {
+  if (loadding.value) {
+    return
+  }
+  // 表单校验
+  const validate = await new Promise((resolve) => {
+    paymentStep2Ref.value.formRef.validate(resolve)
+  })
+  if (!validate) {
+    return
+  }
+  payment()
+}, 500)
 
-    const payment = async () => {
-      const params = {
-        ...paymentStep1Ref?.value?.formMdl,
-        ...paymentStep2Ref?.value?.formMdl,
-      }
+const payment = async () => {
+  const params = {
+    ...paymentStep1Ref?.value?.formMdl,
+    ...paymentStep2Ref?.value?.formMdl,
+  }
 
-      const apiRes = await $api.payment.payment(params).catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          loadding.value = false
-        }, 150)
-      })
+  const apiRes = await $api.payment.payment(params).catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
+    })
+    setTimeout(() => {
+      // 解决loadding闪烁
+      loadding.value = false
+    }, 150)
+  })
 
-      const { code, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS) {
-        currentStepIndex.value = 3
-        loadding.value = true
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        loadding.value = false
-      }, 150)
-    }
+  const { code, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS) {
+    currentStepIndex.value = 3
+    loadding.value = true
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    // 解决loadding闪烁
+    loadding.value = false
+  }, 150)
+}
 
-    // 上一步
-    const handlePrevStep = () => {
-      currentStepIndex.value = 1
-    }
-
-    return {
-      currentStepIndex,
-      paymentStep1Ref,
-      paymentStep2Ref,
-      handleNextStep,
-      handlePayment,
-      handlePrevStep,
-    }
-  },
+// 上一步
+const handlePrevStep = () => {
+  currentStepIndex.value = 1
 }
 </script>
+
 <style lang="scss" scoped></style>

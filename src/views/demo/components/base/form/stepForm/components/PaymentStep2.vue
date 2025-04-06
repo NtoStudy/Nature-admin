@@ -30,31 +30,25 @@
     </el-form>
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref } from 'vue'
+
+defineProps({
+  step1FormMdl: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+
+const formRef = ref(null)
+const formMdl = ref({
+  password: '',
+})
 
 const formRules = {
   password: [{ required: true, message: '请输入支付密码' }],
 }
-export default {
-  props: {
-    step1FormMdl: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-  setup() {
-    const formRef = ref(null)
-    const formMdl = ref({
-      password: '',
-    })
-
-    return {
-      formRules,
-      formMdl,
-      formRef,
-    }
-  },
-}
 </script>
+
 <style lang="scss" scoped></style>

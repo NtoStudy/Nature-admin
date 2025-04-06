@@ -23,7 +23,7 @@
   </div>
 </template>
 
-<script setup name="MultiLevelRoutingCache2">
+<script setup>
 import { ref } from 'vue'
 
 const keywords = ref('')

@@ -101,7 +101,8 @@
     </div>
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref, reactive, onMounted, resolveComponent, h } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
@@ -112,301 +113,255 @@ import NTSearchFormFilter from '@/components/NTSearchFormFilter/index.vue'
 import NTSearchFormFilterItem from '@/components/NTSearchFormFilter/NTSearchFormFilterItem/index.vue'
 import NTCustomTable from '@/components/NTCustomTable/index.vue'
 
-export default {
-  components: { NTCustomTable, NTSearchFormFilterItem, NTSearchFormFilter, NTList, NTColumn },
-  setup() {
-    const { $api, $apiCode, $message, $dict } = useCurrentInstance()
-    const { list: dataList, loadding } = useListPage()
+const { $api, $apiCode, $message, $dict } = useCurrentInstance()
+const { list: dataList, loadding } = useListPage()
 
-    // 分类
-    // 分类列表配置
-    const categoryListOptions = {
-      key: 'id',
-      label: 'name',
-    }
+// 分类列表配置
+const categoryListOptions = {
+  key: 'id',
+  label: 'name',
+}
 
-    const categoryList = ref([])
+const categoryList = ref([])
 
-    // 当前选中的分类
-    const currentCategoryIndex = ref('')
-    const currentCategory = ref({})
+// 当前选中的分类
+const currentCategoryIndex = ref('')
+const currentCategory = ref({})
 
-    // 分类列表获取
-    const categoryLoading = ref(false)
-    const categorySearchFormFilter = reactive({
-      name: '',
+// 分类列表获取
+const categoryLoading = ref(false)
+const categorySearchFormFilter = reactive({
+  name: '',
+})
+
+const getCategoryList = async () => {
+  categoryLoading.value = true
+
+  const { name } = categorySearchFormFilter
+
+  const params = {
+    name,
+  }
+
+  const apiRes = await $api.poem.getPoemCategoryList(params).catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
     })
-    const getCategoryList = async () => {
-      categoryLoading.value = true
+    setTimeout(() => {
+      categoryLoading.value = false
+    }, 150)
+  })
 
-      const { name } = categorySearchFormFilter
-
-      const params = {
-        name,
-      }
-
-      const apiRes = await $api.poem.getPoemCategoryList(params).catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          categoryLoading.value = false
-        }, 150)
-      })
-
-      const { code, data, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS && data) {
-        categoryList.value = [
-          {
-            id: '',
-            name: '全部',
-          },
-          ...data,
-        ]
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        categoryLoading.value = false
-      }, 150)
-    }
-    getCategoryList()
-
-    const beforeLeaveGuard = async (index, item, value) => {
-      // 调用获取数据请求接口，根据请求成功与否，决定是否完成切换
-
-      // 为诗歌列表搜索条件category诗歌分类赋值
-      searchFormFilter.category = value
-
-      const apiRes = await handleSearch()
-      return apiRes
-    }
-
-    // 模版列表item切换事件响应
-    const handleSwitchCategoryListItem = (value, item) => {
-      currentCategoryIndex.value = value
-      currentCategory.value = item
-    }
-
-    // 右键点击事件回调
-    const handleCategoryRowContextMenu = (event, value, item) => {
-      event.preventDefault()
-
-      console.log(value, item)
-    }
-
-    const tableRef = ref(null)
-
-    // 筛选条件
-    const searchFormFilterRef = ref(null)
-    const searchFormFilter = reactive({
-      title: '',
-      category: '',
-      author: '',
-    })
-
-    // 列表列配置
-    const columns = [
+  const { code, data, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS && data) {
+    categoryList.value = [
       {
-        label: '#',
-        prop: '$index',
-        width: 80,
+        id: '',
+        name: '全部',
       },
-      {
-        label: '标题',
-        prop: 'title',
-      },
-      {
-        label: '封面',
-        prop: 'cover',
-        dataFormatConf: {
-          renderType: 'html',
-          withScopeRow: true,
-          formatFunction: ({ value }) => {
-            const component = {
-              setup() {
-                const ElImage = resolveComponent('ElImage')
-                return () => {
-                  return h(ElImage, {
-                    src: value,
-                    fit: 'cover',
-                    'preview-src-list': [value],
-                    'preview-teleported': true,
-                    class: 'cover',
-                  })
-                }
-              },
-            }
-
-            return component
-          },
-        },
-        minWidth: 60,
-      },
-      {
-        label: '作者',
-        prop: 'author',
-      },
-      {
-        label: '分类',
-        prop: 'category',
-      },
-      {
-        label: '时期',
-        prop: 'dynasty',
-      },
-      {
-        label: '状态',
-        prop: 'publishStatus',
-        dataFormatConf: {
-          withScopeRow: true,
-          formatFunction: ({ value }) => {
-            return `${$dict.$formatDictKeyToValue($dict.poem.PUBLISH_STATUS, value)}`
-          },
-        },
-      },
-      {
-        label: '创建日期',
-        prop: 'createTime',
-      },
-      {
-        label: '操作',
-        prop: 'TABLE_COLUMN_OPTS',
-        fixed: 'right',
-        width: 200,
-        overflowTooltip: false,
-      },
+      ...data,
     ]
-
-    // 分页配置
-    const pagination = ref({
-      layout: 'total, prev, pager, next, sizes, jumper',
-      // 数据总条数
-      total: 0,
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
     })
+  }
+  setTimeout(() => {
+    categoryLoading.value = false
+  }, 150)
+}
 
-    // 获取数据列表
-    const getDataList = async () => {
-      // 接口请求状态
-      let apiReqStatus = false
-      loadding.value = true
+getCategoryList()
 
-      const { title, category } = searchFormFilter
+const tableRef = ref(null)
+const searchFormFilterRef = ref(null)
+const searchFormFilter = reactive({
+  title: '',
+  category: '',
+  author: '',
+})
 
-      const { currentPage, pageSize } = tableRef.value
-      const params = {
-        title,
-        category,
-        page: currentPage,
-        pageSize,
-      }
-
-      const apiRes = await $api.poem.getPoemList(params).catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          loadding.value = false
-        }, 150)
-      })
-
-      const { code, data, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS && data) {
-        const { list, total } = data
-        dataList.value = list
-        pagination.value.total = total
-        apiReqStatus = true
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        loadding.value = false
-      }, 150)
-      return apiReqStatus
-    }
-
-    // 页码变化
-    const handleCurrentChange = () => {
-      getDataList()
-    }
-
-    // 每页条数选项变化
-    const handleSizeChange = () => {
-      getDataList()
-    }
-
-    // 搜索
-    const handleSearch = async () => {
-      tableRef.value.currentPage = 1
-      const apiRes = await getDataList()
-      return apiRes
-    }
-    onMounted(() => {
-      handleSearch()
-    })
-
-    // 重置
-    const handleReset = () => {
-      // 重置表单搜索条件
-      tableRef.value.currentPage = 1
-      searchFormFilterRef.value.$refs.ntSearchFormFilterForm.resetFields()
-      handleSearch()
-    }
-
-    // 详情
-    const handleShowDetail = (row) => {
-      ElMessageBox.confirm(
-        `
-          根据自身业务需要，使用row数据进行相关逻辑处理。
-          <br />
-          ${JSON.stringify(row)}
-        `,
-        '提示',
-        {
-          type: 'warning',
-          dangerouslyUseHTMLString: true,
-        },
-      )
-        .then(() => {})
-        .catch(() => {})
-      console.log(row)
-    }
-
-    return {
-      categoryLoading,
-      categoryListOptions,
-      categoryList,
-      beforeLeaveGuard,
-      handleSwitchCategoryListItem,
-      handleCategoryRowContextMenu,
-      tableRef,
-      searchFormFilterRef,
-      searchFormFilter,
-      loadding,
-      columns,
-      pagination,
-      dataList,
-      handleCurrentChange,
-      handleSizeChange,
-      handleSearch,
-      handleReset,
-      handleShowDetail,
-    }
+// 列表列配置
+const columns = [
+  {
+    label: '#',
+    prop: '$index',
+    width: 80,
   },
+  {
+    label: '标题',
+    prop: 'title',
+  },
+  {
+    label: '封面',
+    prop: 'cover',
+    dataFormatConf: {
+      renderType: 'html',
+      withScopeRow: true,
+      formatFunction: ({ value }) => {
+        const component = {
+          setup() {
+            const ElImage = resolveComponent('ElImage')
+            return () => {
+              return h(ElImage, {
+                src: value,
+                fit: 'cover',
+                'preview-src-list': [value],
+                'preview-teleported': true,
+                class: 'cover',
+              })
+            }
+          },
+        }
+        return component
+      },
+    },
+    minWidth: 60,
+  },
+  {
+    label: '作者',
+    prop: 'author',
+  },
+  {
+    label: '分类',
+    prop: 'category',
+  },
+  {
+    label: '时期',
+    prop: 'dynasty',
+  },
+  {
+    label: '状态',
+    prop: 'publishStatus',
+    dataFormatConf: {
+      withScopeRow: true,
+      formatFunction: ({ value }) => {
+        return `${$dict.$formatDictKeyToValue($dict.poem.PUBLISH_STATUS, value)}`
+      },
+    },
+  },
+  {
+    label: '创建日期',
+    prop: 'createTime',
+  },
+  {
+    label: '操作',
+    prop: 'TABLE_COLUMN_OPTS',
+    fixed: 'right',
+    width: 200,
+    overflowTooltip: false,
+  },
+]
+
+// 分页配置
+const pagination = ref({
+  layout: 'total, prev, pager, next, sizes, jumper',
+  total: 0,
+})
+
+// 获取数据列表
+const getDataList = async () => {
+  let apiReqStatus = false
+  loadding.value = true
+
+  const { title, category } = searchFormFilter
+  const { currentPage, pageSize } = tableRef.value
+  const params = {
+    title,
+    category,
+    page: currentPage,
+    pageSize,
+  }
+
+  const apiRes = await $api.poem.getPoemList(params).catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
+    })
+    setTimeout(() => {
+      loadding.value = false
+    }, 150)
+  })
+
+  const { code, data, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS && data) {
+    const { list, total } = data
+    dataList.value = list
+    pagination.value.total = total
+    apiReqStatus = true
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    loadding.value = false
+  }, 150)
+  return apiReqStatus
+}
+
+const handleCurrentChange = () => {
+  getDataList()
+}
+
+const handleSizeChange = () => {
+  getDataList()
+}
+
+const handleSearch = async () => {
+  tableRef.value.currentPage = 1
+  const apiRes = await getDataList()
+  return apiRes
+}
+
+onMounted(() => {
+  handleSearch()
+})
+
+const handleReset = () => {
+  tableRef.value.currentPage = 1
+  searchFormFilterRef.value.$refs.ntSearchFormFilterForm.resetFields()
+  handleSearch()
+}
+
+const beforeLeaveGuard = async (index, item, value) => {
+  searchFormFilter.category = value
+  const apiRes = await handleSearch()
+  return apiRes
+}
+
+const handleSwitchCategoryListItem = (value, item) => {
+  currentCategoryIndex.value = value
+  currentCategory.value = item
+}
+
+const handleCategoryRowContextMenu = (event, value, item) => {
+  event.preventDefault()
+  console.log(value, item)
+}
+
+const handleShowDetail = (row) => {
+  ElMessageBox.confirm(
+    `
+      根据自身业务需要，使用row数据进行相关逻辑处理。
+      <br />
+      ${JSON.stringify(row)}
+    `,
+    '提示',
+    {
+      type: 'warning',
+      dangerouslyUseHTMLString: true,
+    },
+  )
+    .then(() => {})
+    .catch(() => {})
+  console.log(row)
 }
 </script>
+
 <style lang="scss" scoped>
 :deep(.cover) {
   width: 30px;
