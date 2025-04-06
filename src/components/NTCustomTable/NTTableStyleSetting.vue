@@ -5,9 +5,9 @@
   <el-form label-width="80px" label-position="left">
     <el-form-item label="显示尺寸">
       <el-radio-group v-model="tableConfig.size" size="small">
-        <el-radio-button label="large">大</el-radio-button>
-        <el-radio-button label="default">正常</el-radio-button>
-        <el-radio-button label="small">小</el-radio-button>
+        <el-radio-button value="large">大</el-radio-button>
+        <el-radio-button value="default">正常</el-radio-button>
+        <el-radio-button value="small">小</el-radio-button>
       </el-radio-group>
     </el-form-item>
     <el-form-item label="风格化">

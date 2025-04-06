@@ -9,13 +9,13 @@
       <el-form label-position="top" class="py-[24px]">
         <el-form-item label="切换账号">
           <el-radio-group v-model="account" @change="handleSwitchAccount">
-            <el-radio-button label="admin">
+            <el-radio-button value="admin">
               <template #default>admin：管理员</template>
             </el-radio-button>
-            <el-radio-button label="finance">
+            <el-radio-button value="finance">
               <template #default>finance：财务</template>
             </el-radio-button>
-            <el-radio-button label="operator">
+            <el-radio-button value="operator">
               <template #default>operator：运营</template>
             </el-radio-button>
           </el-radio-group>
@@ -24,74 +24,41 @@
           <el-card shadow="never" class="w-[100%] mb-[12px]">
             <template #header>方式1、hasPermission函数</template>
             <el-button
-              :type="
-                hasPermission(ConfigurableTableDetail) ? 'primary' : 'danger'
-              "
+              :type="hasPermission(ConfigurableTableDetail) ? 'primary' : 'danger'"
               :disabled="!hasPermission(ConfigurableTableDetail)"
             >
               配置型表格-详情按钮
-              <span v-if="!hasPermission(ConfigurableTableDetail)">
-                （无权限）
-              </span>
+              <span v-if="!hasPermission(ConfigurableTableDetail)"> （无权限） </span>
             </el-button>
             <el-button
-              :type="
-                hasPermission(ConfigurableTableEdit) ? 'primary' : 'danger'
-              "
+              :type="hasPermission(ConfigurableTableEdit) ? 'primary' : 'danger'"
               :disabled="!hasPermission(ConfigurableTableEdit)"
             >
               配置型表格-编辑按钮
-              <span v-if="!hasPermission(ConfigurableTableEdit)">
-                （无权限）
-              </span>
+              <span v-if="!hasPermission(ConfigurableTableEdit)"> （无权限） </span>
             </el-button>
             <el-button
-              :type="
-                hasPermission(ConfigurableTableCreate) ? 'primary' : 'danger'
-              "
+              :type="hasPermission(ConfigurableTableCreate) ? 'primary' : 'danger'"
               :disabled="!hasPermission(ConfigurableTableCreate)"
             >
               配置型表格-新增按钮
-              <span v-if="!hasPermission(ConfigurableTableCreate)">
-                （无权限）
-              </span>
+              <span v-if="!hasPermission(ConfigurableTableCreate)"> （无权限） </span>
             </el-button>
             <el-button
-              :type="
-                hasPermission(ConfigurableTableDelete) ? 'primary' : 'danger'
-              "
+              :type="hasPermission(ConfigurableTableDelete) ? 'primary' : 'danger'"
               :disabled="!hasPermission(ConfigurableTableDelete)"
             >
               配置型表格-删除按钮
-              <span v-if="!hasPermission(ConfigurableTableDelete)">
-                （无权限）
-              </span>
+              <span v-if="!hasPermission(ConfigurableTableDelete)"> （无权限） </span>
             </el-button>
           </el-card>
 
           <el-card :key="ablePermissionButtons" shadow="never" class="w-[100%]">
             <template #header>方式2、v-permission-auth指令</template>
-            <el-button
-              v-permission-auth="ConfigurableTableDetail"
-              type="primary"
-            >
-              配置型表格-详情按钮
-            </el-button>
-            <el-button v-permission-auth="ConfigurableTableEdit" type="primary">
-              配置型表格-编辑按钮
-            </el-button>
-            <el-button
-              v-permission-auth="ConfigurableTableCreate"
-              type="primary"
-            >
-              配置型表格-新增按钮
-            </el-button>
-            <el-button
-              v-permission-auth="ConfigurableTableDelete"
-              type="primary"
-            >
-              配置型表格-删除按钮
-            </el-button>
+            <el-button v-permission-auth="ConfigurableTableDetail" type="primary"> 配置型表格-详情按钮 </el-button>
+            <el-button v-permission-auth="ConfigurableTableEdit" type="primary"> 配置型表格-编辑按钮 </el-button>
+            <el-button v-permission-auth="ConfigurableTableCreate" type="primary"> 配置型表格-新增按钮 </el-button>
+            <el-button v-permission-auth="ConfigurableTableDelete" type="primary"> 配置型表格-删除按钮 </el-button>
           </el-card>
         </el-form-item>
       </el-form>
