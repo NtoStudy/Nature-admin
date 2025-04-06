@@ -17,6 +17,8 @@ const useLayoutStore = defineStore('useLayoutStore', () => {
   // 导航菜单区域是否折叠状态
   const isNavMenuFold = ref(false)
   const updateNavMenuFoldStatus = (status) => {
+    console.log('updateNavMenuFoldStatus', status)
+
     isNavMenuFold.value = status
   }
 
