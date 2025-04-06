@@ -64,8 +64,6 @@ import { NEED_CONFIRM_PAGE_ROUTE_PATH_LIST } from '@/settings/config/router.js'
 import useAppStore from '@/store/modules/app.js'
 import useLayoutStore from '@/store/modules/layout.js'
 
-const emit = defineEmits(['refresh'])
-
 const instance = getCurrentInstance()
 const route = useRoute()
 const visible = ref(false)
@@ -227,31 +225,6 @@ const openMenu = (tag, e) => {
 onMounted(() => {
   document.body.addEventListener('click', closeMenu)
 })
-
-// 切换tab标签之前的钩子函数响应
-const handleBeforeLeave = async (activeName, oldActiveName) => {
-  const index = [...notCloseableVisitedTags.value, ...visitedTags.value].findIndex((tag) => {
-    return tag.fullPath === oldActiveName
-  })
-
-  const currentTag = [...notCloseableVisitedTags.value, ...visitedTags.value][index]
-
-  let switchConfirmStatus = true
-
-  if (NEED_CONFIRM_PAGE_ROUTE_PATH_LIST.includes(currentTag.path)) {
-    switchConfirmStatus = await new Promise((resolve) => {
-      $bus.ntVisitedTagsSwitchBus.on(async function handler(status) {
-        if (status) {
-          layoutStore.updateIsSureConfirmLeave(true)
-          return resolve(true)
-        }
-        return resolve(false)
-      })
-    })
-  }
-
-  return switchConfirmStatus
-}
 </script>
 
 <style lang="scss" scoped>

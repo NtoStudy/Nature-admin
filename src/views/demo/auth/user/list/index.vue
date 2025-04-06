@@ -140,277 +140,247 @@
     <!-- E 新增、编辑用户弹窗 -->
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
 import useListPage from '@/hooks/business/useListPage'
 import AddUserDialog from './components/AddUserDialog/index.vue'
+import NTSearchFormFilter from '@/components/NTSearchFormFilter/index.vue'
+import NTSearchFormFilterItem from '@/components/NTSearchFormFilter/NTSearchFormFilterItem/index.vue'
+import NTCustomTable from '@/components/NTCustomTable/index.vue'
 
-export default {
-  components: {
-    AddUserDialog,
+const { $api, $apiCode, $message, $dict, $is } = useCurrentInstance()
+const { list: dataList, loadding } = useListPage()
+
+const {
+  auth: { ACCOUNT_STATUS },
+} = $dict
+
+const { isArray } = $is
+
+const tableRef = ref(null)
+
+// 筛选条件
+const searchFormFilterRef = ref(null)
+const searchFormFilter = reactive({
+  id: '',
+  account: '',
+  status: '',
+  createTime: null,
+})
+
+// 列表列配置
+const columns = [
+  {
+    label: '选择框',
+    prop: 'TABLE_COLUMN_CHECKBOX',
   },
-  setup() {
-    const { $api, $apiCode, $message, $dict, $is } = useCurrentInstance()
-    const { list: dataList, loadding } = useListPage()
-
-    const {
-      auth: { ACCOUNT_STATUS },
-    } = $dict
-
-    const { isArray } = $is
-
-    const tableRef = ref(null)
-
-    // 筛选条件
-    const searchFormFilterRef = ref(null)
-    const searchFormFilter = reactive({
-      id: '',
-      account: '',
-      status: '',
-      createTime: null,
-    })
-
-    // 列表列配置
-    const columns = [
-      {
-        label: '选择框',
-        prop: 'TABLE_COLUMN_CHECKBOX',
-      },
-      {
-        label: '#',
-        prop: '$index',
-        width: 80,
-      },
-      {
-        label: 'ID',
-        prop: 'id',
-        sortable: true,
-      },
-      {
-        label: '账号',
-        prop: 'account',
-      },
-      {
-        label: '部门',
-        prop: 'department',
-      },
-      {
-        label: '角色',
-        prop: 'roleNames',
-        dataFormatConf: {
-          formatFunction: (value) => {
-            return value.join(',')
-          },
-        },
-      },
-      {
-        label: '状态',
-        prop: 'status',
-      },
-      {
-        label: '创建时间',
-        prop: 'createTime',
-        sortable: true,
-      },
-      {
-        label: '更新时间',
-        prop: 'updateTime',
-        sortable: true,
-      },
-      {
-        label: '操作',
-        prop: 'TABLE_COLUMN_OPTS',
-        fixed: 'right',
-        width: 200,
-        overflowTooltip: false,
-      },
-    ]
-
-    // 分页配置
-    const pagination = ref({
-      layout: 'total, prev, pager, next, sizes, jumper',
-      // 数据总条数
-      total: 0,
-    })
-
-    // 获取数据列表
-    const getDataList = async () => {
-      loadding.value = true
-
-      const { createTime, ...extraParams } = searchFormFilter
-
-      const { currentPage, pageSize } = tableRef.value
-      const params = {
-        ...extraParams,
-        page: currentPage,
-        pageSize,
-      }
-
-      // 创建时间处理
-      if (isArray(createTime)) {
-        const [startDate, endDate] = createTime
-        params.createStartTime = startDate
-        params.createEndTime = endDate
-      }
-
-      const apiRes = await $api.auth.getAuthUserList(params).catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          loadding.value = false
-        }, 150)
-      })
-
-      const { code, data, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS && data) {
-        const { list, total } = data
-        dataList.value = list
-        pagination.value.total = total
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        loadding.value = false
-      }, 150)
-    }
-
-    // 页码变化
-    const handleCurrentChange = () => {
-      getDataList()
-    }
-
-    // 每页条数选项变化
-    const handleSizeChange = () => {
-      getDataList()
-    }
-
-    // 搜索
-    const handleSearch = () => {
-      tableRef.value.currentPage = 1
-      getDataList()
-    }
-    onMounted(() => {
-      handleSearch()
-    })
-
-    // 重置
-    const handleReset = () => {
-      // 重置表单搜索条件
-      tableRef.value.currentPage = 1
-      searchFormFilterRef.value.$refs.ntSearchFormFilterForm.resetFields()
-      handleSearch()
-    }
-
-    // 多选选择
-    const multipleSelection = ref([])
-    const handleSelectionChange = (rows) => {
-      multipleSelection.value = rows
-    }
-
-    // 批量禁用
-    const handleMultipleDiabled = () => {
-      ElMessageBox.confirm('确认要禁用这些账号吗？', '提示', {
-        type: 'warning',
-      })
-        .then(async () => {
-          $message.success({
-            message: '模拟批量禁用成功提示！',
-            duration: 3000,
-          })
-        })
-        .catch(() => {})
-    }
-
-    const addUserDialogRef = ref(null)
-
-    const userDialogMode = ref('add')
-
-    // 新增
-    const handleShowAddDialog = () => {
-      userDialogMode.value = 'add'
-      addUserDialogRef.value.open()
-    }
-
-    // 详情
-    const handleShowDetail = (row) => {
-      userDialogMode.value = 'detail'
-      openAndFillAddDialog(row)
-    }
-
-    // 编辑
-    const handleShowEdit = (row) => {
-      userDialogMode.value = 'edit'
-      openAndFillAddDialog(row)
-    }
-
-    // 打开新增、编辑、详情弹窗并填充默认数据
-    const openAndFillAddDialog = (row) => {
-      addUserDialogRef.value.open()
-
-      // 默认数据填充
-      const { account, department, roleIds, status } = row
-      addUserDialogRef.value.formMdl = {
-        account,
-        department,
-        roleIds,
-        status,
-      }
-    }
-
-    // 删除
-    const handleDelete = (row) => {
-      ElMessageBox.confirm(
-        `
-          确定要删除吗？
-        `,
-        '提示',
-        {
-          type: 'warning',
-        }
-      )
-        .then(() => {
-          $message.success({
-            message: '模拟删除成功提示！',
-            duration: 3000,
-          })
-        })
-        .catch(() => {})
-      console.log(row)
-    }
-
-    return {
-      ACCOUNT_STATUS,
-      tableRef,
-      searchFormFilterRef,
-      searchFormFilter,
-      loadding,
-      columns,
-      pagination,
-      dataList,
-      handleCurrentChange,
-      handleSizeChange,
-      handleSearch,
-      handleReset,
-      multipleSelection,
-      handleSelectionChange,
-      addUserDialogRef,
-      userDialogMode,
-      handleShowAddDialog,
-      handleShowDetail,
-      handleShowEdit,
-      handleDelete,
-      handleMultipleDiabled,
-    }
+  {
+    label: '#',
+    prop: '$index',
+    width: 80,
   },
+  {
+    label: 'ID',
+    prop: 'id',
+    sortable: true,
+  },
+  {
+    label: '账号',
+    prop: 'account',
+  },
+  {
+    label: '部门',
+    prop: 'department',
+  },
+  {
+    label: '角色',
+    prop: 'roleNames',
+    dataFormatConf: {
+      formatFunction: (value) => {
+        return value.join(',')
+      },
+    },
+  },
+  {
+    label: '状态',
+    prop: 'status',
+  },
+  {
+    label: '创建时间',
+    prop: 'createTime',
+    sortable: true,
+  },
+  {
+    label: '更新时间',
+    prop: 'updateTime',
+    sortable: true,
+  },
+  {
+    label: '操作',
+    prop: 'TABLE_COLUMN_OPTS',
+    fixed: 'right',
+    width: 200,
+    overflowTooltip: false,
+  },
+]
+
+// 分页配置
+const pagination = ref({
+  layout: 'total, prev, pager, next, sizes, jumper',
+  total: 0,
+})
+
+// 获取数据列表
+const getDataList = async () => {
+  loadding.value = true
+
+  const { createTime, ...extraParams } = searchFormFilter
+
+  const { currentPage, pageSize } = tableRef.value
+  const params = {
+    ...extraParams,
+    page: currentPage,
+    pageSize,
+  }
+
+  // 创建时间处理
+  if (isArray(createTime)) {
+    const [startDate, endDate] = createTime
+    params.createStartTime = startDate
+    params.createEndTime = endDate
+  }
+
+  const apiRes = await $api.auth.getAuthUserList(params).catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
+    })
+    setTimeout(() => {
+      loadding.value = false
+    }, 150)
+  })
+
+  const { code, data, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS && data) {
+    const { list, total } = data
+    dataList.value = list
+    pagination.value.total = total
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    loadding.value = false
+  }, 150)
+}
+
+// 页码变化
+const handleCurrentChange = () => {
+  getDataList()
+}
+
+// 每页条数选项变化
+const handleSizeChange = () => {
+  getDataList()
+}
+
+// 搜索
+const handleSearch = () => {
+  tableRef.value.currentPage = 1
+  getDataList()
+}
+
+onMounted(() => {
+  handleSearch()
+})
+
+// 重置
+const handleReset = () => {
+  tableRef.value.currentPage = 1
+  searchFormFilterRef.value.$refs.ntSearchFormFilterForm.resetFields()
+  handleSearch()
+}
+
+// 多选选择
+const multipleSelection = ref([])
+const handleSelectionChange = (rows) => {
+  multipleSelection.value = rows
+}
+
+// 批量禁用
+const handleMultipleDiabled = () => {
+  ElMessageBox.confirm('确认要禁用这些账号吗？', '提示', {
+    type: 'warning',
+  })
+    .then(async () => {
+      $message.success({
+        message: '模拟批量禁用成功提示！',
+        duration: 3000,
+      })
+    })
+    .catch(() => {})
+}
+
+const addUserDialogRef = ref(null)
+const userDialogMode = ref('add')
+
+// 新增
+const handleShowAddDialog = () => {
+  userDialogMode.value = 'add'
+  addUserDialogRef.value.open()
+}
+
+// 详情
+const handleShowDetail = (row) => {
+  userDialogMode.value = 'detail'
+  openAndFillAddDialog(row)
+}
+
+// 编辑
+const handleShowEdit = (row) => {
+  userDialogMode.value = 'edit'
+  openAndFillAddDialog(row)
+}
+
+// 打开新增、编辑、详情弹窗并填充默认数据
+const openAndFillAddDialog = (row) => {
+  addUserDialogRef.value.open()
+
+  // 默认数据填充
+  const { account, department, roleIds, status } = row
+  addUserDialogRef.value.formMdl = {
+    account,
+    department,
+    roleIds,
+    status,
+  }
+}
+
+// 删除
+const handleDelete = (row) => {
+  ElMessageBox.confirm(
+    `
+      确定要删除吗？
+    `,
+    '提示',
+    {
+      type: 'warning',
+    }
+  )
+    .then(() => {
+      $message.success({
+        message: '模拟删除成功提示！',
+        duration: 3000,
+      })
+    })
+    .catch(() => {})
+  console.log(row)
 }
 </script>
+
 <style lang="scss" scoped></style>

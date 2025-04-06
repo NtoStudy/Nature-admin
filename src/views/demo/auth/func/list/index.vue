@@ -131,145 +131,130 @@
     <!-- E 新增、编辑功能弹窗 -->
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
 import useListPage from '@/hooks/business/useListPage'
 import AddFuncDialog from './components/AddFuncDialog/index.vue'
 
-export default {
-  components: {
-    AddFuncDialog,
-  },
-  setup() {
-    const { $api, $apiCode, $message, $dict } = useCurrentInstance()
-    const { list: dataList, loadding } = useListPage()
+const { $api, $apiCode, $message, $dict } = useCurrentInstance()
+const { list: dataList, loadding } = useListPage()
 
-    const {
-      $formatDictKeyToValue,
-      auth: { FUNC_STATUS },
-    } = $dict
+const {
+  $formatDictKeyToValue,
+  auth: { FUNC_STATUS },
+} = $dict
 
-    // 获取数据列表
-    const getDataList = async () => {
-      loadding.value = true
+// 获取数据列表
+const getDataList = async () => {
+  loadding.value = true
 
-      const apiRes = await $api.auth.getAuthFuncList().catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          loadding.value = false
-        }, 150)
-      })
-
-      const { code, data, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS && data) {
-        dataList.value = data
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        loadding.value = false
-      }, 150)
-    }
-
-    onMounted(() => {
-      getDataList()
+  const apiRes = await $api.auth.getAuthFuncList().catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
     })
+    setTimeout(() => {
+      // 解决loadding闪烁
+      loadding.value = false
+    }, 150)
+  })
 
-    const addFuncDialogRef = ref(null)
-
-    const funcDialogMode = ref('add')
-
-    // 新增
-    const handleShowAddDialog = (parent) => {
-      funcDialogMode.value = 'add'
-      addFuncDialogRef.value.open()
-
-      if (parent) {
-        nextTick(() => {
-          addFuncDialogRef.value.formMdl.pid = parent.id
-          addFuncDialogRef.value.formMdl.parentName = parent.title
-        })
-      }
-    }
-
-    // 详情
-    const handleShowDetail = (row) => {
-      funcDialogMode.value = 'detail'
-      openAndFillAddDialog(row)
-    }
-
-    // 编辑
-    const handleShowEdit = (row) => {
-      funcDialogMode.value = 'edit'
-      openAndFillAddDialog(row)
-    }
-
-    // 打开新增、编辑、详情弹窗并填充默认数据
-    const openAndFillAddDialog = (row) => {
-      addFuncDialogRef.value.open()
-
-      // 默认数据填充
-      nextTick(() => {
-        const { pid, parentName, title, type, status, path, code, sort, icon } =
-          row
-        addFuncDialogRef.value.formMdl = {
-          pid,
-          parentName,
-          title,
-          type,
-          status,
-          path,
-          code,
-          sort,
-          icon,
-        }
-      })
-    }
-
-    // 删除
-    const handleDelete = (row) => {
-      ElMessageBox.confirm(
-        `
-          确定要删除吗？
-        `,
-        '提示',
-        {
-          type: 'warning',
-        }
-      )
-        .then(() => {
-          $message.success({
-            message: '模拟删除成功提示！',
-            duration: 3000,
-          })
-        })
-        .catch(() => {})
-      console.log(row)
-    }
-
-    return {
-      formatDictKeyToValue: $formatDictKeyToValue,
-      FUNC_STATUS,
-      loadding,
-      dataList,
-      addFuncDialogRef,
-      funcDialogMode,
-      handleShowAddDialog,
-      handleShowDetail,
-      handleShowEdit,
-      handleDelete,
-    }
-  },
+  const { code, data, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS && data) {
+    dataList.value = data
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    // 解决loadding闪烁
+    loadding.value = false
+  }, 150)
 }
+
+onMounted(() => {
+  getDataList()
+})
+
+const addFuncDialogRef = ref(null)
+
+const funcDialogMode = ref('add')
+
+// 新增
+const handleShowAddDialog = (parent) => {
+  funcDialogMode.value = 'add'
+  addFuncDialogRef.value.open()
+
+  if (parent) {
+    nextTick(() => {
+      addFuncDialogRef.value.formMdl.pid = parent.id
+      addFuncDialogRef.value.formMdl.parentName = parent.title
+    })
+  }
+}
+
+// 详情
+const handleShowDetail = (row) => {
+  funcDialogMode.value = 'detail'
+  openAndFillAddDialog(row)
+}
+
+// 编辑
+const handleShowEdit = (row) => {
+  funcDialogMode.value = 'edit'
+  openAndFillAddDialog(row)
+}
+
+// 打开新增、编辑、详情弹窗并填充默认数据
+const openAndFillAddDialog = (row) => {
+  addFuncDialogRef.value.open()
+
+  // 默认数据填充
+  nextTick(() => {
+    const { pid, parentName, title, type, status, path, code, sort, icon } =
+      row
+    addFuncDialogRef.value.formMdl = {
+      pid,
+      parentName,
+      title,
+      type,
+      status,
+      path,
+      code,
+      sort,
+      icon,
+    }
+  })
+}
+
+// 删除
+const handleDelete = (row) => {
+  ElMessageBox.confirm(
+    `
+      确定要删除吗？
+    `,
+    '提示',
+    {
+      type: 'warning',
+    }
+  )
+    .then(() => {
+      $message.success({
+        message: '模拟删除成功提示！',
+        duration: 3000,
+      })
+    })
+    .catch(() => {})
+  console.log(row)
+}
+
+// 暴露给模板使用的格式化函数
+const formatDictKeyToValue = $formatDictKeyToValue
 </script>
+
 <style lang="scss" scoped></style>

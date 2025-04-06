@@ -6,7 +6,7 @@
         <img src="@/assets/images/avatar.png" class="avatar" />
         <div class="info">
           <p class="text-[18px] font-bold">
-            你好 admin，我是Vue Admin Nature，简称VAN， 一款基于vue3、element-plus技术栈研发而成的前端管理系统框架。
+            你好 admin，我是Nature-Admin，NA， 一款基于vue3、element-plus技术栈研发而成的前端管理系统框架。
           </p>
           <p>
             最近更新：
@@ -50,27 +50,27 @@
             <el-descriptions :column="3" border>
               <el-descriptions-item>
                 <template #label>vue</template>
-                <el-tag type="success" size="small">^3.3.4</el-tag>
+                <el-tag type="success" size="small">^3.5.13</el-tag>
               </el-descriptions-item>
               <el-descriptions-item>
                 <template #label>
                   <span class="whitespace-nowrap">vue-router</span>
                 </template>
-                <el-tag type="success" size="small">^4.2.5</el-tag>
+                <el-tag type="success" size="small">^4</el-tag>
               </el-descriptions-item>
               <el-descriptions-item>
                 <template #label>pinia</template>
-                <el-tag type="success" size="small">^2.1.7</el-tag>
+                <el-tag type="success" size="small">^3.0.1</el-tag>
               </el-descriptions-item>
               <el-descriptions-item>
                 <template #label>vite</template>
-                <el-tag type="success" size="small">^4.3.9</el-tag>
+                <el-tag type="success" size="small">^6.2.0</el-tag>
               </el-descriptions-item>
               <el-descriptions-item :span="2">
                 <template #label>
                   <span class="whitespace-nowrap">element-plus</span>
                 </template>
-                <el-tag type="success" size="small">^2.3.7</el-tag>
+                <el-tag type="success" size="small">^2.9.7</el-tag>
               </el-descriptions-item>
               <el-descriptions-item :span="3">
                 <template #label>

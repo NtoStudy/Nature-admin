@@ -57,192 +57,185 @@
     </template>
   </el-dialog>
 </template>
-<script>
+
+<script setup>
 import { ref, computed } from 'vue'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
 import useAddPage from '@/hooks/business/useAddPage'
 
-export default {
-  props: {
-    mode: {
-      type: String,
-      default: 'add',
-      required: true,
-      validator: (value) => {
-        return ['add', 'edit', 'detail'].includes(value)
-      },
+// 定义props
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'add',
+    required: true,
+    validator: (value) => {
+      return ['add', 'edit', 'detail'].includes(value)
     },
   },
-  setup(props) {
-    const { $api, $apiCode, $message } = useCurrentInstance()
+})
 
-    const { isDetailMode, isCreateMode, isEditMode } = useAddPage(props)
+// 定义需要暴露给父组件的方法和数据
+const emit = defineEmits(['update'])
 
-    const dialogVisible = ref(false)
+const { $api, $apiCode, $message } = useCurrentInstance()
 
-    const dialogTitle = computed(() => {
-      const map = {
-        add: '添加角色',
-        edit: '编辑角色',
-        detail: '角色详情',
-      }
+const { isDetailMode, isCreateMode, isEditMode } = useAddPage(props)
 
-      return map[props.mode]
-    })
+const dialogVisible = ref(false)
 
-    // 表单校验规则
-    const formRules = {
-      name: [{ required: true, message: '请输入角色名称' }],
-      permission: [{ required: true, message: '请勾选权限' }],
-    }
+const dialogTitle = computed(() => {
+  const map = {
+    add: '添加角色',
+    edit: '编辑角色',
+    detail: '角色详情',
+  }
 
-    const formRef = ref(null)
-    const formMdl = ref({
-      name: '',
-      permission: [],
-    })
+  return map[props.mode]
+})
 
-    const permissionTreeRef = ref(null)
-    const checkedKeysArr = ref(['Home'])
-    const treeData = ref([])
-
-    // 获取系统功能树形列表
-    const permissionLoadding = ref(false)
-    const getAuthFuncListTree = async () => {
-      permissionLoadding.value = true
-
-      const apiRes = await $api.auth.getAuthFuncListTree().catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决permissionLoadding闪烁
-          permissionLoadding.value = false
-        }, 150)
-      })
-
-      const { code, data, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS && data) {
-        treeData.value = data
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决permissionLoadding闪烁
-        permissionLoadding.value = false
-      }, 150)
-    }
-
-    // 提交表单数据
-    const loadding = ref(false)
-    const handleSubmit = async () => {
-      if (loadding.value) {
-        return
-      }
-
-      // 权限树选中值获取
-      formMdl.value.permission = permissionTreeRef.value.getCheckedNodes(
-        false,
-        true
-      )
-
-      // 表单校验
-      const validate = await new Promise((resolve) => {
-        formRef.value.validate(resolve)
-      })
-
-      if (!validate) {
-        return
-      }
-      loadding.value = true
-
-      // 参数组装
-      const params = {
-        ...formMdl.value,
-      }
-
-      console.log('API接口调用模拟', params)
-
-      // 接口调用
-      let apiKey = null
-      if (isCreateMode.value) {
-        apiKey = 'createRole'
-      } else if (isEditMode.value) {
-        apiKey = 'updateRole'
-      }
-      const apiRes = await $api.auth[apiKey](params).catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          loadding.value = false
-        }, 150)
-      })
-
-      const { code, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS) {
-        $message.success({
-          message: '模拟操作成功',
-          duration: 3000,
-        })
-        loadding.value = true
-        // 关闭弹窗
-        dialogVisible.value = false
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        loadding.value = false
-      }, 150)
-
-      loadding.value = false
-    }
-
-    // 弹窗关闭
-    const handleClosed = () => {
-      formRef.value.resetFields()
-    }
-
-    // 打开弹窗
-    const open = () => {
-      dialogVisible.value = true
-
-      getAuthFuncListTree()
-    }
-
-    // 关闭弹窗
-    const close = () => {
-      dialogVisible.value = false
-    }
-
-    return {
-      dialogVisible,
-      dialogTitle,
-      isDetailMode,
-      formRules,
-      formRef,
-      formMdl,
-      permissionTreeRef,
-      checkedKeysArr,
-      treeData,
-      permissionLoadding,
-      loadding,
-      handleSubmit,
-      handleClosed,
-      open,
-      close,
-    }
-  },
+// 表单校验规则
+const formRules = {
+  name: [{ required: true, message: '请输入角色名称' }],
+  permission: [{ required: true, message: '请勾选权限' }],
 }
+
+const formRef = ref(null)
+const formMdl = ref({
+  name: '',
+  permission: [],
+})
+
+const permissionTreeRef = ref(null)
+const checkedKeysArr = ref(['Home'])
+const treeData = ref([])
+
+// 获取系统功能树形列表
+const permissionLoadding = ref(false)
+const getAuthFuncListTree = async () => {
+  permissionLoadding.value = true
+
+  const apiRes = await $api.auth.getAuthFuncListTree().catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
+    })
+    setTimeout(() => {
+      // 解决permissionLoadding闪烁
+      permissionLoadding.value = false
+    }, 150)
+  })
+
+  const { code, data, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS && data) {
+    treeData.value = data
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    // 解决permissionLoadding闪烁
+    permissionLoadding.value = false
+  }, 150)
+}
+
+// 提交表单数据
+const loadding = ref(false)
+const handleSubmit = async () => {
+  if (loadding.value) {
+    return
+  }
+
+  // 权限树选中值获取
+  formMdl.value.permission = permissionTreeRef.value.getCheckedNodes(
+    false,
+    true
+  )
+
+  // 表单校验
+  const validate = await new Promise((resolve) => {
+    formRef.value.validate(resolve)
+  })
+
+  if (!validate) {
+    return
+  }
+  loadding.value = true
+
+  // 参数组装
+  const params = {
+    ...formMdl.value,
+  }
+
+  console.log('API接口调用模拟', params)
+
+  // 接口调用
+  let apiKey = null
+  if (isCreateMode.value) {
+    apiKey = 'createRole'
+  } else if (isEditMode.value) {
+    apiKey = 'updateRole'
+  }
+  const apiRes = await $api.auth[apiKey](params).catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
+    })
+    setTimeout(() => {
+      // 解决loadding闪烁
+      loadding.value = false
+    }, 150)
+  })
+
+  const { code, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS) {
+    $message.success({
+      message: '模拟操作成功',
+      duration: 3000,
+    })
+    loadding.value = true
+    // 关闭弹窗
+    dialogVisible.value = false
+    // 通知父组件更新
+    emit('update')
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    // 解决loadding闪烁
+    loadding.value = false
+  }, 150)
+
+  loadding.value = false
+}
+
+// 弹窗关闭
+const handleClosed = () => {
+  formRef.value.resetFields()
+}
+
+// 打开弹窗
+const open = () => {
+  dialogVisible.value = true
+  getAuthFuncListTree()
+}
+
+// 关闭弹窗
+const close = () => {
+  dialogVisible.value = false
+}
+
+// 暴露方法给父组件
+defineExpose({
+  open,
+  close,
+  formMdl,
+})
 </script>
+
 <style lang="scss" scoped></style>

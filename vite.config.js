@@ -13,11 +13,6 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: {
-    hmr: {
-      overlay: false, // 禁用 HMR 错误覆盖层，这样控制台警告就不会显示在界面上
-    },
-  },
   css: {
     postcss: {
       plugins: [tailwindcss(), autoprefixer()],
