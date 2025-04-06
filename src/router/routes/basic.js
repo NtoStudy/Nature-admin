@@ -1,11 +1,7 @@
 /*
  * 基础路由配置
  */
-import {
-  DEFAULT_HOME_PAGE_ROUTE_PATH,
-  NOT_FOUND_PAGE_ROUTE_PATH,
-  NO_AUTH_ROUTE_PATH,
-} from '@/settings/config/router'
+import { DEFAULT_HOME_PAGE_ROUTE_PATH, NOT_FOUND_PAGE_ROUTE_PATH, NO_AUTH_ROUTE_PATH } from '@/settings/config/router'
 
 import NTLayouts from '@/layouts/index.vue'
 
@@ -32,7 +28,7 @@ export const rootRoute = {
 export const loginRoutes = {
   path: '/login',
   name: 'Login',
-  // component: () => import('@/views/login/index.vue'),
+  component: () => import('@/views/login/index.vue'),
 }
 
 // 错误页路由
@@ -44,7 +40,7 @@ export const errorRoute = {
     {
       path: NO_AUTH_ROUTE_PATH,
       name: 'NoAuth',
-      // component: () => import('@/views/errors/noAuth.vue'),
+      component: () => import('@/views/errors/noAuth.vue'),
     },
   ],
 }
@@ -59,7 +55,7 @@ export const notFoundRoutes = [
   {
     path: NOT_FOUND_PAGE_ROUTE_PATH,
     name: 'PageNotFound',
-    // component: () => import('@/views/errors/404NotFound.vue'),
+    component: () => import('@/views/errors/404NotFound.vue'),
   },
 ]
 
