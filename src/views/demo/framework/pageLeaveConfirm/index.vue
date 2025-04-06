@@ -77,10 +77,18 @@
     </el-card>
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref } from 'vue'
 import useLayoutStore from '@/store/modules/layout'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
+
+const layoutStore = useLayoutStore()
+const { router, route, $api, $apiCode, $message, $bus, $dict } = useCurrentInstance()
+
+const {
+  poem: { DYNASTY },
+} = $dict
 
 // 表单校验规则
 const formRules = {
@@ -89,120 +97,98 @@ const formRules = {
   dynasty: [{ required: true, message: '请选择时期' }],
 }
 
-export default {
-  setup() {
-    const layoutStore = useLayoutStore()
-    const { router, route, $api, $apiCode, $message, $bus, $dict } =
-      useCurrentInstance()
+const formRef = ref(null)
+const formMdl = ref({
+  name: '',
+  author: '',
+  dynasty: '',
+})
 
-    const {
-      poem: { DYNASTY },
-    } = $dict
+// 提交表单数据
+const submitLoading = ref(false)
+const handleSubmit = async () => {
+  if (submitLoading.value) {
+    return
+  }
 
-    const formRef = ref(null)
-    const formMdl = ref({
-      name: '',
-      author: '',
-      dynasty: '',
+  // 表单校验
+  const validate = await new Promise((resolve) => {
+    formRef.value.validate(resolve)
+  })
+
+  if (!validate) {
+    return
+  }
+  submitLoading.value = true
+
+  // 参数组装
+  const params = {
+    ...formMdl.value.records,
+  }
+
+  console.log('API接口调用模拟', params)
+
+  // 接口调用
+  const apiRes = await $api.poem.createPoem(params).catch((error) => {
+    $message.error({
+      message: error,
+      duration: 3000,
     })
-
-    // 提交表单数据
-    const submitLoading = ref(false)
-    const handleSubmit = async () => {
-      if (submitLoading.value) {
-        return
-      }
-
-      // 表单校验
-      const validate = await new Promise((resolve) => {
-        formRef.value.validate(resolve)
-      })
-
-      if (!validate) {
-        return
-      }
-      submitLoading.value = true
-
-      // 参数组装
-      const params = {
-        ...formMdl.value.records,
-      }
-
-      console.log('API接口调用模拟', params)
-
-      // 接口调用
-      const apiRes = await $api.poem.createPoem(params).catch((error) => {
-        $message.error({
-          message: error,
-          duration: 3000,
-        })
-        setTimeout(() => {
-          // 解决loadding闪烁
-          submitLoading.value = false
-        }, 150)
-      })
-
-      const { code, msg } = apiRes.data
-      if (code === $apiCode.SUCCESS) {
-        $message.success({
-          message: '新增成功',
-          duration: 3000,
-        })
-        submitLoading.value = true
-
-        // 设置已经确认离开状态值，则离开页面时不会弹出确认弹窗
-        layoutStore.updateIsSureConfirmLeave(true)
-        $bus.ntVisitedTagsBus.emit([
-          route,
-          false,
-          () => {
-            router.push({ path: '/demo/components/base/columnAndList' })
-          },
-        ])
-      } else {
-        $message.error({
-          message: msg,
-          duration: 3000,
-        })
-      }
-      setTimeout(() => {
-        // 解决loadding闪烁
-        submitLoading.value = false
-      }, 150)
-
+    setTimeout(() => {
+      // 解决loadding闪烁
       submitLoading.value = false
-    }
+    }, 150)
+  })
 
-    const handleCancel = () => {
-      // 方式1：
-      // 关闭当前页面后跳转到指定页面
-      $bus.ntVisitedTagsBus.emit([
-        route,
-        false,
-        () => {
-          router.push({ path: '/demo/components/base/columnAndList' })
-        },
-      ])
-    }
+  const { code, msg } = apiRes.data
+  if (code === $apiCode.SUCCESS) {
+    $message.success({
+      message: '新增成功',
+      duration: 3000,
+    })
+    submitLoading.value = true
 
-    const handleCancel2 = () => {
-      // 方式2：
-      // 关闭当前页面后系统自行判断跳转历史页面，
-      // 无其他历史页面则打开默认页面（一般是首页，可以自行在setting/config/router配置）
-      $bus.ntVisitedTagsBus.emit([route, true])
-    }
+    // 设置已经确认离开状态值，则离开页面时不会弹出确认弹窗
+    layoutStore.updateIsSureConfirmLeave(true)
+    $bus.ntVisitedTagsBus.emit([
+      route,
+      false,
+      () => {
+        router.push({ path: '/demo/components/base/columnAndList' })
+      },
+    ])
+  } else {
+    $message.error({
+      message: msg,
+      duration: 3000,
+    })
+  }
+  setTimeout(() => {
+    // 解决loadding闪烁
+    submitLoading.value = false
+  }, 150)
 
-    return {
-      DYNASTY,
-      formRules,
-      formRef,
-      formMdl,
-      submitLoading,
-      handleSubmit,
-      handleCancel,
-      handleCancel2,
-    }
-  },
+  submitLoading.value = false
+}
+
+const handleCancel = () => {
+  // 方式1：
+  // 关闭当前页面后跳转到指定页面
+  $bus.ntVisitedTagsBus.emit([
+    route,
+    false,
+    () => {
+      router.push({ path: '/demo/components/base/columnAndList' })
+    },
+  ])
+}
+
+const handleCancel2 = () => {
+  // 方式2：
+  // 关闭当前页面后系统自行判断跳转历史页面，
+  // 无其他历史页面则打开默认页面（一般是首页，可以自行在setting/config/router配置）
+  $bus.ntVisitedTagsBus.emit([route, true])
 }
 </script>
+
 <style lang="scss" scoped></style>

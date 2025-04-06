@@ -65,7 +65,8 @@
     </el-card>
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref, toRefs } from 'vue'
 import useUserStore from '@/store/modules/user'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
@@ -77,56 +78,41 @@ import {
   ConfigurableTableDelete,
 } from '@/settings/config/permission'
 
-export default {
-  setup() {
-    const userStore = useUserStore()
-    const { $message } = useCurrentInstance()
-    const { hasPermission } = usePermission()
+const userStore = useUserStore()
+const { $message } = useCurrentInstance()
+const { hasPermission } = usePermission()
 
-    const { userInfo, ablePermissionButtons } = toRefs(userStore)
+const { userInfo, ablePermissionButtons } = toRefs(userStore)
 
-    // 账号切换
-    const account = ref(userInfo.value?.name || 'admin')
-    const loadding = ref(false)
-    const handleSwitchAccount = async () => {
-      if (loadding.value) {
-        return
-      }
-      loadding.value = true
-      userStore
-        .login({ account: account.value })
-        .then(() => {
-          $message.success({
-            message: '账号切换成功',
-            duration: 3000,
-          })
-        })
-        .catch(() => {
-          $message.error({
-            message: '账号切换失败',
-            duration: 3000,
-          })
-        })
-        .finally(() => {
-          setTimeout(() => {
-            // 解决loadding闪烁
-            loadding.value = false
-          }, 150)
-        })
-    }
-
-    return {
-      ablePermissionButtons,
-      ConfigurableTableDetail,
-      ConfigurableTableEdit,
-      ConfigurableTableCreate,
-      ConfigurableTableDelete,
-      hasPermission,
-      account,
-      loadding,
-      handleSwitchAccount,
-    }
-  },
+// 账号切换
+const account = ref(userInfo.value?.name || 'admin')
+const loadding = ref(false)
+const handleSwitchAccount = async () => {
+  if (loadding.value) {
+    return
+  }
+  loadding.value = true
+  userStore
+    .login({ account: account.value })
+    .then(() => {
+      $message.success({
+        message: '账号切换成功',
+        duration: 3000,
+      })
+    })
+    .catch(() => {
+      $message.error({
+        message: '账号切换失败',
+        duration: 3000,
+      })
+    })
+    .finally(() => {
+      setTimeout(() => {
+        // 解决loadding闪烁
+        loadding.value = false
+      }, 150)
+    })
 }
 </script>
+
 <style lang="scss" scoped></style>

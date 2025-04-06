@@ -22,18 +22,11 @@
     </el-card>
   </div>
 </template>
-<script>
+
+<script setup name="MultiLevelRoutingCache2">
 import { ref } from 'vue'
 
-export default {
-  name: 'MultiLevelRoutingCache2',
-  setup() {
-    const keywords = ref('')
-
-    return {
-      keywords,
-    }
-  },
-}
+const keywords = ref('')
 </script>
+
 <style lang="scss" scoped></style>
