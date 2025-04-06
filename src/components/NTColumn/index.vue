@@ -23,17 +23,16 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  name: 'NTColumn',
-  props: {
-    scrollbar: {
-      type: Boolean,
-      default: true,
-    },
+
+<script setup>
+defineProps({
+  scrollbar: {
+    type: Boolean,
+    default: true,
   },
-}
+})
 </script>
+
 <style lang="scss" scoped>
 .nt-column {
   width: 100%;

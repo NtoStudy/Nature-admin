@@ -1,6 +1,3 @@
-<!--
- * 自定义表格组件，基于NTTable组件封装，具有调整显示字段、字段排序等功能
--->
 <template>
   <div class="nt-custom-table">
     <NTTable ref="ntTableRef" v-bind="tableAttrs">
@@ -28,99 +25,76 @@
           </el-button>
         </template>
 
-        <NTTableStyleSetting
-          v-model:config="tableStyleConfig"
-        ></NTTableStyleSetting>
+        <NTTableStyleSetting v-model:config="tableStyleConfig"></NTTableStyleSetting>
       </el-popover>
 
-      <el-popover
-        placement="top"
-        title="表格列设置"
-        width="auto"
-        trigger="click"
-        :hide-after="0"
-      >
+      <el-popover placement="top" title="表格列设置" width="auto" trigger="click" :hide-after="0">
         <template #reference>
           <el-button circle>
             <i class="ri-equalizer-line"></i>
           </el-button>
         </template>
 
-        <NTTableColumnSetting
-          v-model:tableColumns="tableColumnConfig"
-        ></NTTableColumnSetting>
+        <NTTableColumnSetting v-model:tableColumns="tableColumnConfig"></NTTableColumnSetting>
       </el-popover>
     </div>
   </div>
 </template>
-<script>
-import { ref, computed, watch } from 'vue'
+
+<script setup>
+import { ref, computed, watch, useAttrs } from 'vue'
 import NTTableStyleSetting from './NTTableStyleSetting.vue'
 import NTTableColumnSetting from './NTTableColumnSetting.vue'
+import NTTable from '@/components/NTTable/index.vue'
 
-export default {
-  name: 'NTCustomTable',
-  components: { NTTableStyleSetting, NTTableColumnSetting },
-  props: {
-    isShowSetting: {
-      type: Boolean,
-      default: true,
-    },
+defineProps({
+  isShowSetting: {
+    type: Boolean,
+    default: true,
   },
-  setup(props, context) {
-    const { attrs } = context
-    const ntTableRef = ref()
+})
 
-    // 表格风格设置配置
-    const tableStyleConfig = ref({
-      // Table 的尺寸
-      size: 'default',
-      // 是否为斑马纹 table
-      stripe: true,
-      // 是否带有纵向边框
-      border: true,
-    })
+const attrs = useAttrs()
+const ntTableRef = ref()
 
-    // 表格列column设置配置
-    const tableColumnConfig = ref(attrs.columns || [])
+// 表格风格设置配置
+const tableStyleConfig = ref({
+  size: 'default',
+  stripe: true,
+  border: true,
+})
 
-    const computedColumns = computed(() => {
-      return tableColumnConfig.value.filter((column) => {
-        return column.isVisible !== false
-      })
-    })
+// 表格列column设置配置
+const tableColumnConfig = ref(attrs.columns || [])
 
-    const tableAttrs = computed(() => {
-      return {
-        ...attrs,
-        ...tableStyleConfig.value,
-        columns: computedColumns.value,
-      }
-    })
+const computedColumns = computed(() => {
+  return tableColumnConfig.value.filter((column) => {
+    return column.isVisible !== false
+  })
+})
 
-    const tableStyleSettingPopoverRef = ref()
+const tableAttrs = computed(() => {
+  return {
+    ...attrs,
+    ...tableStyleConfig.value,
+    columns: computedColumns.value,
+  }
+})
 
-    watch(
-      () => tableStyleConfig.value,
-      () => {
-        // 表格的尺寸变化后，动态调整popover位置
-        tableStyleSettingPopoverRef.value?.popperRef?.popperInstanceRef?.update()
-      },
-      {
-        deep: true,
-      }
-    )
+const tableStyleSettingPopoverRef = ref()
 
-    return {
-      ntTableRef,
-      tableStyleConfig,
-      tableColumnConfig,
-      tableAttrs,
-      tableStyleSettingPopoverRef,
-    }
+watch(
+  () => tableStyleConfig.value,
+  () => {
+    // 表格的尺寸变化后，动态调整popover位置
+    tableStyleSettingPopoverRef.value?.popperRef?.popperInstanceRef?.update()
   },
-}
+  {
+    deep: true,
+  },
+)
 </script>
+
 <style lang="scss" scoped>
 .nt-custom-table {
   position: relative;

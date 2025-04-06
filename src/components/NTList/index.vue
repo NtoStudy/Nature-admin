@@ -1,6 +1,3 @@
-<!--
- * NTList组件
--->
 <template>
   <div class="nt-list">
     <div class="nt-list__wrapper">
@@ -24,115 +21,96 @@
     </div>
   </div>
 </template>
-<script>
+
+<script setup>
 import { ref, computed, nextTick } from 'vue'
 import { get as getObjectAttrValue } from 'lodash'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
 
-export default {
-  name: 'NTList',
-  props: {
-    list: {
-      type: Array,
-      default: () => [],
-    },
-    options: {
-      type: Object,
-      default: () => ({
-        // 主键key字段
-        key: 'id',
-        // 展示内容字段
-        label: 'name',
-      }),
-    },
-    // item是否可以拖拽
-    draggable: {
-      type: Boolean,
-      default: false,
-    },
-    beforeLeave: {
-      type: Function,
-      default: null,
-    },
+const props = defineProps({
+  list: {
+    type: Array,
+    default: () => [],
   },
-  emits: ['switch', 'row-context-menu'],
-  setup(props, { emit }) {
-    const { $is } = useCurrentInstance()
-    const { isFunction, isAsyncFunction } = $is
+  options: {
+    type: Object,
+    default: () => ({
+      key: 'id',
+      label: 'name',
+    }),
+  },
+  draggable: {
+    type: Boolean,
+    default: false,
+  },
+  beforeLeave: {
+    type: Function,
+    default: null,
+  },
+})
 
-    const currentIndex = ref('')
+const emit = defineEmits(['switch', 'row-context-menu'])
 
-    const isEmpty = computed(() => {
-      return props.list.length === 0
+const { $is } = useCurrentInstance()
+const { isFunction, isAsyncFunction } = $is
+
+const currentIndex = ref('')
+
+const isEmpty = computed(() => {
+  return props.list.length === 0
+})
+
+// 切换item选择
+const handleSwitchItem = async (item) => {
+  if (isFunction(props.beforeLeave)) {
+    let leaveConfirm
+
+    const index = props.list.findIndex((listItem) => {
+      return (
+        getObjectAttrValue(listItem, props.options.key) ===
+        getObjectAttrValue(item, props.options.key)
+      )
     })
 
-    // 切换item选择
-    const handleSwitchItem = async (item) => {
-      if (isFunction(props.beforeLeave)) {
-        let leaveConfirm
+    const value = getObjectAttrValue(props.list[index], props.options.key)
 
-        const index = props.list.findIndex((listItem) => {
-          return (
-            getObjectAttrValue(listItem, props.options.key) ===
-            getObjectAttrValue(item, props.options.key)
-          )
-        })
-
-        const value = getObjectAttrValue(props.list[index], props.options.key)
-
-        if (isAsyncFunction(props.beforeLeave)) {
-          await new Promise((resolve) => {
-            props
-              .beforeLeave(index, item, value)
-              .then((status) => {
-                leaveConfirm = status
-                resolve()
-              })
-              .catch(() => {
-                leaveConfirm = false
-                resolve()
-              })
+    if (isAsyncFunction(props.beforeLeave)) {
+      await new Promise((resolve) => {
+        props
+          .beforeLeave(index, item, value)
+          .then((status) => {
+            leaveConfirm = status
+            resolve()
           })
-        } else {
-          leaveConfirm = props.beforeLeave(index, item, value)
-        }
-
-        if (leaveConfirm === false) {
-          return
-        }
-
-        // const index = props.list.findIndex((listItem) => {
-        //   return (
-        //     getObjectAttrValue(listItem, props.options.key) ===
-        //     getObjectAttrValue(item, props.options.key)
-        //   )
-        // })
-
-        if (index !== -1) {
-          currentIndex.value = value
-          emit('switch', currentIndex.value, props.list[index])
-        }
-      }
-    }
-
-    // 鼠标右键点击
-    const handleContextMenu = (event, item) => {
-      handleSwitchItem(item)
-      nextTick(() => {
-        emit('row-context-menu', event, currentIndex.value, item)
+          .catch(() => {
+            leaveConfirm = false
+            resolve()
+          })
       })
+    } else {
+      leaveConfirm = props.beforeLeave(index, item, value)
     }
 
-    return {
-      getObjectAttrValue,
-      currentIndex,
-      isEmpty,
-      handleSwitchItem,
-      handleContextMenu,
+    if (leaveConfirm === false) {
+      return
     }
-  },
+
+    if (index !== -1) {
+      currentIndex.value = value
+      emit('switch', currentIndex.value, props.list[index])
+    }
+  }
+}
+
+// 鼠标右键点击
+const handleContextMenu = (event, item) => {
+  handleSwitchItem(item)
+  nextTick(() => {
+    emit('row-context-menu', event, currentIndex.value, item)
+  })
 }
 </script>
+
 <style lang="scss" scoped>
 .nt-list {
   .nt-list__item {

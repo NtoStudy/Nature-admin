@@ -4,9 +4,7 @@
       <div class="node">
         <img class="node-icon" src="~@/assets/images/folder.svg" />
         <span>{{ node.name }}</span>
-        <el-icon v-if="node.open" @click="node.open = false"
-          ><Remove
-        /></el-icon>
+        <el-icon v-if="node.open" @click="node.open = false"><Remove /></el-icon>
         <el-icon v-else @click="node.open = true"><CirclePlus /></el-icon>
       </div>
       <div
@@ -25,16 +23,16 @@
     </template>
   </div>
 </template>
-<script>
-export default {
-  name: 'NTLineTreeItem',
-  props: {
-    treeData: {
-      type: Array,
-      default: () => [],
-    },
+
+<script setup>
+import { Remove, CirclePlus } from '@element-plus/icons-vue'
+
+defineProps({
+  treeData: {
+    type: Array,
+    default: () => [],
   },
-}
+})
 </script>
 <style lang="scss">
 .nt-line-tree-item {

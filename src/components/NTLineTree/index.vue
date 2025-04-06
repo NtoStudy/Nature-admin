@@ -5,22 +5,18 @@
     </div>
   </div>
 </template>
-<script>
+
+<script setup>
 import NTLineTreeItem from './NTLineTreeItem.vue'
 
-export default {
-  name: 'NTLineTree',
-  components: {
-    NTLineTreeItem,
+defineProps({
+  data: {
+    type: Array,
+    default: () => [],
   },
-  props: {
-    data: {
-      type: Array,
-      default: () => [],
-    },
-  },
-}
+})
 </script>
+
 <style lang="scss" scoped>
 .nt-line-tree {
   .row {

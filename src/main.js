@@ -15,42 +15,42 @@ import App from '@/App.vue'
 import addPermissionRoutesMiddleWare from '@/middleware/addPermissionRoutesMiddleWare'
 import mountCacheDataMiddleWare from '@/middleware/mountCacheDataMiddleWare'
 
-async function bootstrap() {
-  const app = createApp(App)
+const app = createApp(App)
 
-  // 注册UI组件库
-  app.use(ElementPlus, { locale })
-  Object.keys(ElementPlusIconsVue).forEach((key) => {
-    const component = ElementPlusIconsVue[key]
-    app.component(key, component)
-  })
+// 注册 Element Plus
+app.use(ElementPlus, { locale })
+Object.entries(ElementPlusIconsVue).forEach(([key, component]) => {
+  app.component(key, component)
+})
 
-  // 注册store状态管理
-  registStore(app)
+// 注册 pinia Store
+registStore(app)
 
-  // 插件plugins注册
-  registPlugins(app)
+// 注册插件
+registPlugins(app)
 
-  // 初始化路由与相关必须的用户数据
-  await mountCacheDataMiddleWare(app)
-  await addPermissionRoutesMiddleWare()
+// 注册事件总线
+const ntVisitedTagsBus = useEventBus('ntVisitedTags')
+const ntVisitedTagsSwitchBus = useEventBus('ntVisitedTagsSwitch')
 
-  // 注册路由与路由守卫
-  registRouter(app)
-  registRouterGuards(router)
-
-  // 事件总线
-  const ntVisitedTagsBus = useEventBus('ntVisitedTags')
-  const ntVisitedTagsSwitchBus = useEventBus('ntVisitedTagsSwitch')
-  // router/pageLeaveGuard.js等非组件中需要使用ntVisitedTagsSwitchBus，无法像组件结构currentInstance一样获取，也无法使用provider、inject注入
-  window.ntVisitedTagsSwitchBus = ntVisitedTagsSwitchBus
-  window.ntVisitedTagsBus = ntVisitedTagsBus
-  app.config.globalProperties.$bus = {
-    ntVisitedTagsBus,
-    ntVisitedTagsSwitchBus,
-  }
-
-  app.mount('#app')
+// 全局事件总线配置
+window.ntVisitedTagsSwitchBus = ntVisitedTagsSwitchBus
+window.ntVisitedTagsBus = ntVisitedTagsBus
+app.config.globalProperties.$bus = {
+  ntVisitedTagsBus,
+  ntVisitedTagsSwitchBus,
 }
 
-bootstrap()
+// 初始化应用
+Promise.all([mountCacheDataMiddleWare(app), addPermissionRoutesMiddleWare()])
+  .then(() => {
+    // 注册路由
+    registRouter(app)
+    registRouterGuards(router)
+
+    // 挂载应用
+    app.mount('#app')
+  })
+  .catch((error) => {
+    console.error('应用初始化失败:', error)
+  })

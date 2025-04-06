@@ -16,41 +16,32 @@
     </el-form-item>
   </el-form>
 </template>
-<script>
+
+<script setup>
 import { computed } from 'vue'
 
-export default {
-  name: 'NTTableSetting',
-  props: {
-    config: {
-      type: Object,
-      default: () => ({
-        // Table 的尺寸
-        size: 'default',
-        // 是否为斑马纹 table
-        stripe: true,
-        // 是否带有纵向边框
-        border: false,
-      }),
-    },
-  },
-  emits: ['update:config'],
-  setup(props, context) {
-    const { emit } = context
 
-    const tableConfig = computed({
-      get() {
-        return props.config
-      },
-      set(value) {
-        emit('update:config', value)
-      },
-    })
-
-    return {
-      tableConfig,
-    }
+const props = defineProps({
+  config: {
+    type: Object,
+    default: () => ({
+      size: 'default',
+      stripe: true,
+      border: false,
+    }),
   },
-}
+})
+
+const emit = defineEmits(['update:config'])
+
+const tableConfig = computed({
+  get() {
+    return props.config
+  },
+  set(value) {
+    emit('update:config', value)
+  },
+})
 </script>
+
 <style lang="scss" scoped></style>

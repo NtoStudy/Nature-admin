@@ -7,26 +7,20 @@
   </el-col>
 </template>
 
-<script>
-import { computed } from 'vue'
+<script setup>
+import { computed, useAttrs } from 'vue'
 
-export default {
-  name: 'NTSearchFormFilterItem',
-  setup(props, { attrs }) {
-    const colComputedAttrs = computed(() => {
-      return {
-        xs: 24,
-        sm: 12,
-        md: 8,
-        lg: 8,
-        xl: 6,
-        ...attrs?.col,
-      }
-    })
-    return {
-      colComputedAttrs,
-    }
-  },
-}
+const attrs = useAttrs()
+const colComputedAttrs = computed(() => {
+  return {
+    xs: 24,
+    sm: 12,
+    md: 8,
+    lg: 8,
+    xl: 6,
+    ...attrs?.col,
+  }
+})
 </script>
+
 <style lang="scss" scoped></style>

@@ -33,66 +33,50 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import useCurrentInstance from '@/hooks/business/useCurrentInstance'
+import NTSearchFormFilterItem from './NTSearchFormFilterItem/index.vue'
 
-export default {
-  name: 'NTSearchFormFilter',
-  props: {
-    isShowFoldUnfoldBtn: {
-      type: Boolean,
-      default: true,
-    },
-    // 父组件中传递来的搜索执行函数
-    searchHandle: {
-      type: Function,
-      default: null,
-    },
-    // 父组件中传递来的重置执行函数
-    resetHandle: {
-      type: Function,
-      default: null,
-    },
-    // 搜索时外部loadding状态值
-    loading: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps({
+  isShowFoldUnfoldBtn: {
+    type: Boolean,
+    default: true,
   },
-  setup(props) {
-    const {
-      $is: { isFunction },
-    } = useCurrentInstance()
-
-    const ntSearchFormFilterForm = ref(null)
-
-    // 是否折叠多余搜索条件项
-    const isFoldFormFilter = ref(true)
-
-    // 搜索
-    const handleSearch = () => {
-      if (isFunction(props?.searchHandle)) {
-        props?.searchHandle()
-      }
-    }
-
-    // 重置
-    const handleReset = () => {
-      if (isFunction(props?.resetHandle)) {
-        props?.resetHandle()
-      }
-    }
-
-    return {
-      ntSearchFormFilterForm,
-      isFoldFormFilter,
-      handleSearch,
-      handleReset,
-    }
+  searchHandle: {
+    type: Function,
+    default: null,
   },
+  resetHandle: {
+    type: Function,
+    default: null,
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const {
+  $is: { isFunction },
+} = useCurrentInstance()
+
+const ntSearchFormFilterForm = ref(null)
+const isFoldFormFilter = ref(true)
+
+const handleSearch = () => {
+  if (isFunction(props?.searchHandle)) {
+    props?.searchHandle()
+  }
+}
+
+const handleReset = () => {
+  if (isFunction(props?.resetHandle)) {
+    props?.resetHandle()
+  }
 }
 </script>
+
 <style lang="scss" scoped>
 .nt-search-form-filter {
   padding: 24px 12px 12px;
