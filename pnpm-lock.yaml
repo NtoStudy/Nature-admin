@@ -22,7 +22,7 @@ importers:
         version: 13.0.0(vue@3.5.13)
       '@vueuse/integrations':
         specifier: ^13.0.0
-        version: 13.0.0(async-validator@4.2.5)(axios@1.8.4)(vue@3.5.13)
+        version: 13.0.0(async-validator@4.2.5)(axios@1.8.4)(nprogress@0.2.0)(vue@3.5.13)
       autoprefixer:
         specifier: 10.4.15
         version: 10.4.15(postcss@8.4.28)
@@ -50,6 +50,9 @@ importers:
       normalize.css:
         specifier: ^8.0.1
         version: 8.0.1
+      nprogress:
+        specifier: ^0.2.0
+        version: 0.2.0
       pinia:
         specifier: ^3.0.1
         version: 3.0.1(vue@3.5.13)
@@ -1683,6 +1686,9 @@ packages:
   normalize.css@8.0.1:
     resolution: {integrity: sha512-qizSNPO93t1YUuUhP22btGOo3chcvDFqFaj2TRybP0DMxkHOCTYwp3n34fel4a31ORXy4m1Xq0Gyqpb5m33qIg==}
 
+  nprogress@0.2.0:
+    resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
+
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
@@ -2687,7 +2693,7 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@vueuse/integrations@13.0.0(async-validator@4.2.5)(axios@1.8.4)(vue@3.5.13)':
+  '@vueuse/integrations@13.0.0(async-validator@4.2.5)(axios@1.8.4)(nprogress@0.2.0)(vue@3.5.13)':
     dependencies:
       '@vueuse/core': 13.0.0(vue@3.5.13)
       '@vueuse/shared': 13.0.0(vue@3.5.13)
@@ -2695,6 +2701,7 @@ snapshots:
     optionalDependencies:
       async-validator: 4.2.5
       axios: 1.8.4
+      nprogress: 0.2.0
 
   '@vueuse/metadata@13.0.0': {}
 
@@ -3742,6 +3749,8 @@ snapshots:
   normalize-wheel-es@1.2.0: {}
 
   normalize.css@8.0.1: {}
+
+  nprogress@0.2.0: {}
 
   nth-check@2.1.1:
     dependencies:

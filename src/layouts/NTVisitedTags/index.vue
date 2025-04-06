@@ -2,11 +2,6 @@
   <div ref="visitedTagsRef" class="nt-visited-tags">
     <div class="nt-visited-tags-container">
       <el-scrollbar ref="tagsScrollBar" class="scrollbar">
-        <!-- <el-tabs
-          :model-value="activeRouteName"
-          type="card"
-          :before-leave="handleBeforeLeave"
-        > -->
         <el-tabs :model-value="activeRouteName" type="card">
           <!-- 非可关闭路由tab -->
           <el-tab-pane
@@ -53,12 +48,6 @@
         </el-tabs>
       </el-scrollbar>
       <ul v-show="visible" :style="{ left: left + 'px', top: top + 'px' }" class="contextmenu">
-        <!-- <li
-          v-if="isActive(selectedTag)"
-          @click.stop="handleRefresh(selectedTag)"
-        >
-          刷新
-        </li> -->
         <li v-if="selectedTag?.fullPath !== '/dashboard'" @click.stop="handleClose(selectedTag)">关闭</li>
         <li @click.stop="handleCloseOther(selectedTag)">关闭其它</li>
         <li @click.stop="handleCloseAll(selectedTag)">关闭所有</li>
@@ -67,233 +56,204 @@
   </div>
 </template>
 
-<script>
-import { defineComponent, computed, ref, onMounted, getCurrentInstance, watch, nextTick, inject } from 'vue'
+<script setup>
+import { computed, ref, onMounted, getCurrentInstance, watch, nextTick, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import useAppStore from '@/store/modules/app'
-import useLayoutStore from '@/store/modules/layout'
-import { NEED_CONFIRM_PAGE_ROUTE_PATH_LIST } from '@/settings/config/router'
+import { NEED_CONFIRM_PAGE_ROUTE_PATH_LIST } from '@/settings/config/router.js'
+import useAppStore from '@/store/modules/app.js'
+import useLayoutStore from '@/store/modules/layout.js'
 
-export default defineComponent({
-  emits: ['refresh'],
-  setup(props, { emit }) {
-    const instance = getCurrentInstance()
-    const route = useRoute()
-    const visible = ref(false)
-    const activeRouteName = ref(route.fullPath)
-    const visitedTagsRef = ref()
-    const tagsScrollBar = ref()
-    const appStore = useAppStore()
-    const layoutStore = useLayoutStore()
-    const $array = inject('$array')
-    const $is = inject('$is')
-    const {
-      proxy: { $bus },
-    } = instance
+const emit = defineEmits(['refresh'])
 
-    // tag访问历史页签关闭事件响应监听
-    $bus.ntVisitedTagsBus.on(async ([pageRoute, autoOpenDefaultPage = true, callback]) => {
-      const closeStatus = await handleClose(pageRoute, autoOpenDefaultPage)
-      if (closeStatus) {
-        if ($is.isFunction(callback)) {
-          await callback()
-          setTimeout(() => {
-            $bus.ntVisitedTagsSwitchBus.emit(true)
-          }, 300)
-        }
-      }
-    })
+const instance = getCurrentInstance()
+const route = useRoute()
+const visible = ref(false)
+const activeRouteName = ref(route.fullPath)
+const visitedTagsRef = ref()
+const tagsScrollBar = ref()
+const appStore = useAppStore()
+const layoutStore = useLayoutStore()
+const $array = inject('$array')
+const $is = inject('$is')
+const {
+  proxy: { $bus },
+} = instance
+console.log(appStore.visitedTags)
 
-    const notCloseableVisitedTags = computed(() => {
-      return appStore.visitedTags.filter((tag) => {
-        return tag.meta.closeable === false
-      })
-    })
-
-    const visitedTags = computed(() => {
-      return appStore.visitedTags.filter((tag) => {
-        return tag.meta.closeable !== false
-      })
-    })
-    watch(
-      () => route,
-      () => {
-        activeRouteName.value = route.fullPath
-        const idx = $array.indexOfObjInObjArrByMultipleKey(
-          {
-            fullPath: route.fullPath,
-          },
-          [
-            {
-              fullPath: '/dashboard',
-            },
-            ...visitedTags.value,
-          ],
-          ['fullPath'],
-        )
-        nextTick(() => {
-          const curTag = instance?.refs[`tagRef${idx}`]
-          let x = 0
-          if ($is.isArray(curTag)) {
-            x = curTag[0]?.$el.offsetLeft
-          } else {
-            x = curTag?.$el.offsetLeft
-          }
-          if (tagsScrollBar.value?.setScrollLeft) {
-            tagsScrollBar.value.setScrollLeft(x ?? 0)
-          }
-        })
-      },
-      {
-        deep: true,
-      },
-    )
-
-    const closeMenu = () => {
-      visible.value = false
+// tag访问历史页签关闭事件响应监听
+$bus.ntVisitedTagsBus.on(async ([pageRoute, autoOpenDefaultPage = true, callback]) => {
+  const closeStatus = await handleClose(pageRoute, autoOpenDefaultPage)
+  if (closeStatus) {
+    if ($is.isFunction(callback)) {
+      await callback()
+      setTimeout(() => {
+        $bus.ntVisitedTagsSwitchBus.emit(true)
+      }, 300)
     }
-
-    const handleClose = async function handleClose(tag, autoOpenDefaultPage = true) {
-      if (NEED_CONFIRM_PAGE_ROUTE_PATH_LIST.includes(tag.path) && !layoutStore.isSureConfirmLeave) {
-        const isSure = await new Promise((resolve) => {
-          setTimeout(() => {
-            ElMessageBox.confirm('内容未保存，确认退出？', '提示', {
-              type: 'warning',
-            })
-              .then(() => {
-                layoutStore.updateIsSureConfirmLeave(true)
-                resolve(true)
-              })
-              .catch(() => {
-                layoutStore.updateIsSureConfirmLeave(false)
-                resolve(false)
-              })
-          }, 200)
-        })
-
-        if (!isSure) {
-          return Promise.resolve(false)
-        }
-      }
-
-      if (visible.value) {
-        closeMenu()
-      }
-      const idx = $array.indexOfObjInObjArrByMultipleKey(
-        {
-          fullPath: tag.fullPath,
-        },
-        [
-          {
-            fullPath: '/dashboard',
-          },
-          ...visitedTags.value,
-        ],
-        ['fullPath'],
-      )
-
-      appStore.removeOneVisitedTags(visitedTags.value[idx - 1], autoOpenDefaultPage)
-      return Promise.resolve(true)
-    }
-
-    const handleCloseAll = (tag) => {
-      if (visible.value) {
-        closeMenu()
-      }
-      appStore.removeAllVisitedTags(tag)
-    }
-
-    const handleCloseOther = (tag) => {
-      if (visible.value) {
-        closeMenu()
-      }
-      appStore.removeOtherVisitedTags(tag)
-    }
-    const handleRefresh = (selectedTag) => {
-      if (visible.value) {
-        closeMenu()
-      }
-      // 刷新当前路由tag对应的页面
-      emit('refresh', selectedTag)
-    }
-
-    const isActive = (tag) => {
-      return tag?.fullPath === route.fullPath
-    }
-
-    const selectedTag = ref()
-    const top = ref(0)
-    const left = ref(0)
-    const openMenu = (tag, e) => {
-      const menuMinWidth = 105
-      const offsetLeft = visitedTagsRef.value.getBoundingClientRect().left
-      const { offsetWidth: visitedTagOffsetWidth } = visitedTagsRef
-      const offsetWidth = visitedTagOffsetWidth
-      const maxLeft = offsetWidth - menuMinWidth
-      left.value = e.clientX - offsetLeft + 15
-
-      if (left.value > maxLeft) {
-        left.value = maxLeft
-      } else {
-        left.value *= 1
-      }
-
-      top.value = e.clientY - 52
-      visible.value = true
-      selectedTag.value = tag
-    }
-
-    onMounted(() => {
-      document.body.addEventListener('click', closeMenu)
-    })
-
-    // 切换tab标签之前的钩子函数响应
-    const handleBeforeLeave = async (activeName, oldActiveName) => {
-      const index = [...notCloseableVisitedTags.value, ...visitedTags.value].findIndex((tag) => {
-        return tag.fullPath === oldActiveName
-      })
-
-      const currentTag = [...notCloseableVisitedTags.value, ...visitedTags.value][index]
-
-      let switchConfirmStatus = true
-
-      if (NEED_CONFIRM_PAGE_ROUTE_PATH_LIST.includes(currentTag.path)) {
-        switchConfirmStatus = await new Promise((resolve) => {
-          $bus.ntVisitedTagsSwitchBus.on(async function handler(status) {
-            if (status) {
-              layoutStore.updateIsSureConfirmLeave(true)
-              return resolve(true)
-            }
-            return resolve(false)
-          })
-        })
-      }
-
-      return switchConfirmStatus
-    }
-
-    return {
-      visitedTagsRef,
-      tagsScrollBar,
-      notCloseableVisitedTags,
-      visitedTags,
-      activeRouteName,
-      handleClose,
-      handleCloseAll,
-      handleCloseOther,
-      handleRefresh,
-      isActive,
-      visible,
-      left,
-      top,
-      openMenu,
-      selectedTag,
-      handleBeforeLeave,
-    }
-  },
+  }
 })
+
+const notCloseableVisitedTags = computed(() => {
+  return appStore.visitedTags.filter((tag) => {
+    return tag.meta.closeable === false
+  })
+})
+
+const visitedTags = computed(() => {
+  return appStore.visitedTags.filter((tag) => {
+    return tag.meta.closeable !== false
+  })
+})
+
+watch(
+  () => route,
+  () => {
+    activeRouteName.value = route.fullPath
+    const idx = $array.indexOfObjInObjArrByMultipleKey(
+      {
+        fullPath: route.fullPath,
+      },
+      [
+        {
+          fullPath: '/dashboard',
+        },
+        ...visitedTags.value,
+      ],
+      ['fullPath'],
+    )
+    nextTick(() => {
+      const curTag = instance?.refs[`tagRef${idx}`]
+      let x = 0
+      if ($is.isArray(curTag)) {
+        x = curTag[0]?.$el.offsetLeft
+      } else {
+        x = curTag?.$el.offsetLeft
+      }
+      if (tagsScrollBar.value?.setScrollLeft) {
+        tagsScrollBar.value.setScrollLeft(x ?? 0)
+      }
+    })
+  },
+  {
+    deep: true,
+  },
+)
+
+const closeMenu = () => {
+  visible.value = false
+}
+
+const handleClose = async function handleClose(tag, autoOpenDefaultPage = true) {
+  if (NEED_CONFIRM_PAGE_ROUTE_PATH_LIST.includes(tag.path) && !layoutStore.isSureConfirmLeave) {
+    const isSure = await new Promise((resolve) => {
+      setTimeout(() => {
+        ElMessageBox.confirm('内容未保存，确认退出？', '提示', {
+          type: 'warning',
+        })
+          .then(() => {
+            layoutStore.updateIsSureConfirmLeave(true)
+            resolve(true)
+          })
+          .catch(() => {
+            layoutStore.updateIsSureConfirmLeave(false)
+            resolve(false)
+          })
+      }, 200)
+    })
+
+    if (!isSure) {
+      return Promise.resolve(false)
+    }
+  }
+
+  if (visible.value) {
+    closeMenu()
+  }
+  const idx = $array.indexOfObjInObjArrByMultipleKey(
+    {
+      fullPath: tag.fullPath,
+    },
+    [
+      {
+        fullPath: '/dashboard',
+      },
+      ...visitedTags.value,
+    ],
+    ['fullPath'],
+  )
+
+  appStore.removeOneVisitedTags(visitedTags.value[idx - 1], autoOpenDefaultPage)
+  return Promise.resolve(true)
+}
+
+const handleCloseAll = (tag) => {
+  if (visible.value) {
+    closeMenu()
+  }
+  appStore.removeAllVisitedTags(tag)
+}
+
+const handleCloseOther = (tag) => {
+  if (visible.value) {
+    closeMenu()
+  }
+  appStore.removeOtherVisitedTags(tag)
+}
+
+const selectedTag = ref()
+const top = ref(0)
+const left = ref(0)
+
+const openMenu = (tag, e) => {
+  const menuMinWidth = 105
+  const offsetLeft = visitedTagsRef.value.getBoundingClientRect().left
+  const { offsetWidth: visitedTagOffsetWidth } = visitedTagsRef
+  const offsetWidth = visitedTagOffsetWidth
+  const maxLeft = offsetWidth - menuMinWidth
+  left.value = e.clientX - offsetLeft + 15
+
+  if (left.value > maxLeft) {
+    left.value = maxLeft
+  } else {
+    left.value *= 1
+  }
+
+  top.value = e.clientY - 52
+  visible.value = true
+  selectedTag.value = tag
+}
+
+onMounted(() => {
+  document.body.addEventListener('click', closeMenu)
+})
+
+// 切换tab标签之前的钩子函数响应
+const handleBeforeLeave = async (activeName, oldActiveName) => {
+  const index = [...notCloseableVisitedTags.value, ...visitedTags.value].findIndex((tag) => {
+    return tag.fullPath === oldActiveName
+  })
+
+  const currentTag = [...notCloseableVisitedTags.value, ...visitedTags.value][index]
+
+  let switchConfirmStatus = true
+
+  if (NEED_CONFIRM_PAGE_ROUTE_PATH_LIST.includes(currentTag.path)) {
+    switchConfirmStatus = await new Promise((resolve) => {
+      $bus.ntVisitedTagsSwitchBus.on(async function handler(status) {
+        if (status) {
+          layoutStore.updateIsSureConfirmLeave(true)
+          return resolve(true)
+        }
+        return resolve(false)
+      })
+    })
+  }
+
+  return switchConfirmStatus
+}
 </script>
+
 <style lang="scss" scoped>
 .nt-visited-tags {
   position: relative;

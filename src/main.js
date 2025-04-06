@@ -3,7 +3,7 @@ import { useEventBus } from '@vueuse/core'
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import registPlugins from '@/plugins'
-// import registRouterGuards from '@/router/guards'
+import registRouterGuards from '@/router/guards'
 import router, { registRouter } from '@/router'
 import { registStore } from '@/store'
 import '@/assets/style/app.scss'
@@ -37,7 +37,7 @@ async function bootstrap() {
 
   // 注册路由与路由守卫
   registRouter(app)
-  // registRouterGuards(router)
+  registRouterGuards(router)
 
   // 事件总线
   const ntVisitedTagsBus = useEventBus('ntVisitedTags')

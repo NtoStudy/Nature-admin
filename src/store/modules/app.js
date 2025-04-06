@@ -15,10 +15,7 @@ const useAppStore = defineStore('useAppStore', () => {
 
   // 追加一个历史记录tag
   const addOneVisitedTags = (history) => {
-    if (
-      $array.indexOfObjInObjArrByKey(history, visitedTags.value, 'fullPath') ===
-      -1
-    ) {
+    if ($array.indexOfObjInObjArrByKey(history, visitedTags.value, 'fullPath') === -1) {
       visitedTags.value.push(history)
     }
   }
@@ -34,11 +31,7 @@ const useAppStore = defineStore('useAppStore', () => {
       return tag.meta.closeable !== false
     })
 
-    const index = $array.indexOfObjInObjArrByKey(
-      history,
-      visitedTagsLst,
-      'fullPath'
-    )
+    const index = $array.indexOfObjInObjArrByKey(history, visitedTagsLst, 'fullPath')
 
     if (index !== -1) {
       visitedTagsLst.splice(index, 1)
@@ -66,11 +59,7 @@ const useAppStore = defineStore('useAppStore', () => {
       return tag.meta.closeable !== false
     })
 
-    const index = $array.indexOfObjInObjArrByKey(
-      history,
-      visitedTagsLst,
-      'fullPath'
-    )
+    const index = $array.indexOfObjInObjArrByKey(history, visitedTagsLst, 'fullPath')
     if (index !== -1 || history.meta.notCloseable) {
       visitedTagsLst = visitedTagsLst.filter((tag) => {
         return tag.fullPath === history.fullPath
@@ -91,11 +80,7 @@ const useAppStore = defineStore('useAppStore', () => {
       return tag.meta.closeable !== false
     })
 
-    const index = $array.indexOfObjInObjArrByKey(
-      history,
-      visitedTagsLst,
-      'fullPath'
-    )
+    const index = $array.indexOfObjInObjArrByKey(history, visitedTagsLst, 'fullPath')
 
     if (index !== -1 || history.meta.closeable !== true) {
       visitedTags.value = visitedTags.value.filter((tag) => {

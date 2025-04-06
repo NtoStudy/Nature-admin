@@ -10,7 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // eslint-disable-next-line no-undef
-      '@': path.resolve(__dirname, './src'), // 配置 @ 指向 src 目录
+      '@': path.resolve(__dirname, './src'),
     },
   },
   css: {
